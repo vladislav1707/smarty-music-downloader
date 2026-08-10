@@ -1,0 +1,7 @@
+{
+    "format": "mp3",
+    "sources_file": "../data/sources.txt",
+    "music_dir": "C:/Users/lenovo/Music/Music_Folder/YT-DLP",
+    "max_working_proxies": 5,
+    "proxy_provider": "github_free_proxy_list"
+}
