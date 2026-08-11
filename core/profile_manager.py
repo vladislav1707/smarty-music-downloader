@@ -46,9 +46,16 @@ class ProfileManager:
         # вернуть список ссылок
         return links
 
-    # вернуть аргументы для yt-dlp
-    def get_ytdlp_args(self, name):
-        pass
+    # вернуть аргументы для yt-dlp как словарь
+    def get_ytdlp_args(self, name: str) -> dict:
+        # получить расположение ytdlp_args.json
+        args_file = self.profile_path(name) / "ytdlp_args.json"
+        # если нет ytdlp_args.json то вернуть пустой словарь
+        if not args_file.exists():
+            return {}
+        # открыть файл ytdlp_args.json в режиме чтения("r") и в utf-8
+        with open(args_file, "r", encoding="utf-8") as f:
+            return json.load(f)
 
     # вернуть список доступных профилей
     def list_profiles(self) -> List[str]:
