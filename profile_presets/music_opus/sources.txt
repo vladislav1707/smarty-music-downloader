@@ -1,0 +1,2 @@
+# RU: удаляйте `si` из ссылок перед добавлением сюда, например с помощью Source Identifier Sanitizer
+# EN: Remove `si` from links before adding them here - for example, using the Source Identifier Sanitizer.

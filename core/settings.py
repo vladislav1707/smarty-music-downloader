@@ -14,7 +14,7 @@ class Settings:
     DEFAULTS = {
     "max_working_proxies": 5,
     "proxy_provider": "github_free_proxy_list",
-    "profiles_dir": "C:/Users/lenovo/Music/Music_Folder/profiles"
+    "profiles_dir": "profile_presets" # "profile_presets" is a special value that points to presets
     }
 
     # Settings class constructor

@@ -1,0 +1,21 @@
+[
+  "--socket-timeout",
+  "15",
+  "--retries",
+  "3",
+  "--retry-sleep",
+  "0",
+  "--fragment-retries",
+  "1",
+  "--no-check-certificate",
+  "--format",
+  "bestvideo[height<=1080]+bestaudio/best[height<=1080]",
+  "--merge-output-format",
+  "mp4",
+  "--continue",
+  "--ignore-errors",
+  "--output",
+  "./downloaded_videos/%(uploader)s/%(title)s.%(ext)s",
+  "--download-archive",
+  "./archive.txt"
+]
