@@ -12,9 +12,6 @@ CONFIG_PATH = BASE_DIR.parent / "data" / "settings.json"
 class Settings:
     # default settings
     DEFAULTS = {
-    "format": "opus",
-    "sources_file": "../data/sources.txt",
-    "music_dir": "C:/Users/lenovo/Music/Music_Folder/YT-DLP",
     "max_working_proxies": 5,
     "proxy_provider": "github_free_proxy_list",
     "profiles_dir": "C:/Users/lenovo/Music/Music_Folder/profiles"
