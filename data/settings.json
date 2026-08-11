@@ -1,5 +1,0 @@
-{
-    "max_working_proxies": 5,
-    "proxy_provider": "github_free_proxy_list",
-    "profiles_dir": "profile_presets"
-}
