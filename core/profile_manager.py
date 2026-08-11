@@ -46,6 +46,6 @@ class ProfileManager:
         return self._profiles_dir.joinpath(name).exists()
 
     # вернуть путь к профилю, на вход принимает имя профиля
-    def profile_path(self, name):
-        # к _profiles_dir добавить name
-        pass
+    def profile_path(self, name: str) -> Path:
+        # к _profiles_dir добавить name(имя профиля)
+        return self._profiles_dir / name
