@@ -22,11 +22,29 @@ class ProfileManager:
         else:
             self._profiles_dir = Path(raw)
 
-    # список ссылок в конкретном профиле
-    def get_links(self, name):
-        # получить ссылки(игнорируя комментарии) которые содержатся в sources.txt профиля имени name
-        # и вернуть полученные ссылки в удобном формате
-        pass
+    # список ссылок для скачивания в конкретном профиле
+    def get_links(self, name: str) -> List[str]:
+        # получить расположение sources.txt в профиле
+        sources_file = self.profile_path(name) / "sources.txt"
+        # список ссылок
+        links = []
+
+        # если нету sources.txt тогда вернуть пустой список
+        if not sources_file.exists():
+            return []
+
+        # открыть sources_file в режиме чтения("r") и в utf-8
+        with open(sources_file, "r", encoding="utf-8") as f:
+            # для каждой линии в файле
+            for line in f:
+                # убрать пробельные символы в начале и конце строки
+                line = line.strip()
+                # если строка не пустая и не комментарий добавить в список ссылок
+                if line and not line.startswith("#"):
+                    links.append(line)
+
+        # вернуть список ссылок
+        return links
 
     # вернуть аргументы для yt-dlp
     def get_ytdlp_args(self, name):
