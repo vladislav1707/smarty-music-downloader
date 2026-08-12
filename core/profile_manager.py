@@ -1,5 +1,3 @@
-# этот файл должен уметь читать профили, профиль это папка с sources.txt(список ютуб ссылок с комментариями) и ytdlp_args.json
-
 from settings import Settings
 import os
 import json
