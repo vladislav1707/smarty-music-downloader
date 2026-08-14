@@ -85,8 +85,12 @@ class Settings:
     # reset a single setting
     def reset(self, name: str) -> None:
         # if setting does not exist, raise error about unknown setting
-        if name not in self.DEFAULTS:
-            raise KeyError(f"Unknown setting: {name}")
-        # set setting to default value
-        self._data[name] = self.DEFAULTS[name]
-        logger.info("Setting %s to default value: %s", name, self.DEFAULTS[name])
+        if name in self.DEFAULTS:
+            # set setting to default value
+            self._data[name] = self.DEFAULTS[name]
+            logger.info("Setting %s to default value: %s", name, self.DEFAULTS[name])
+        else:
+            pass
+            # if not in DEFAULTS delete setting
+            self._data.pop(name)
+        

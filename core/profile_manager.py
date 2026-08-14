@@ -1,6 +1,6 @@
 # TODO: добавить логи и сделать docstring(в перспективе)
 
-from settings import Settings
+from .settings import Settings
 import os
 import json
 import logging
@@ -95,3 +95,4 @@ class ProfileManager:
     def profile_path(self, name: str) -> Path:
         # append the profile name to _profiles_dir
         return self._profiles_dir / name
+    
