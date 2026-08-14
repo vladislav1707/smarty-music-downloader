@@ -1,4 +1,4 @@
-# TODO: добавить логи и сделать docstring(в перспективе)
+# TODO: сделать docstring
 
 from .settings import Settings
 import os
