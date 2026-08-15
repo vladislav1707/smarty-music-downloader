@@ -90,7 +90,6 @@ class Settings:
             self._data[name] = self.DEFAULTS[name]
             logger.info("Setting %s to default value: %s", name, self.DEFAULTS[name])
         else:
-            pass
             # if not in DEFAULTS delete setting
             self._data.pop(name)
         
