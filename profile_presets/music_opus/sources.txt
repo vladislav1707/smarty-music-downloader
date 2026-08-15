@@ -1,2 +1,4 @@
-# RU: удаляйте `si` из ссылок перед добавлением сюда, например с помощью Source Identifier Sanitizer
-# EN: Remove `si` from links before adding them here - for example, using the Source Identifier Sanitizer.
+﻿# Remove `si` from links before adding them here - for example, using the Source Identifier Sanitizer.
+# (privacy recommendation, not required for functionality).
+# example link:
+https://www.youtube.com/watch?v=UHYBH0Vn-2Y

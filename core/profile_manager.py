@@ -1,7 +1,6 @@
 # TODO: сделать docstring
 
 from .settings import Settings
-import os
 import json
 import logging
 from pathlib import Path
@@ -47,7 +46,7 @@ class ProfileManager:
 
         try:
             # open sources_file in read mode ("r") with utf-8 encoding
-            with open(sources_file, "r", encoding="utf-8") as f:
+            with open(sources_file, "r", encoding="utf-8-sig") as f:
                 # for each line in the file
                 for line in f:
                     # strip whitespace from both ends
@@ -60,6 +59,14 @@ class ProfileManager:
         except (UnicodeDecodeError) as e:
             logger.error("UnicodeDecodeError in %s: %s", sources_file, e)
         return links
+
+    # get list of download links for all profiles
+    def get_all_links(self) -> List[str]:
+        profile_list = self.list_profiles()
+        list = []
+        for i in profile_list:
+            list.extend(self.get_links(i))
+        return list
 
     # return yt-dlp arguments as a dictionary
     def get_ytdlp_args(self, name: str) -> dict:
