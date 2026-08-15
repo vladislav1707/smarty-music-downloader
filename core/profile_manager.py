@@ -23,13 +23,13 @@ class ProfileManager:
         if raw == "profile_presets":
             self._profiles_dir = ROOT_DIR / "profile_presets"
             logger.warning(
-        "Using default profile_presets directory: %s\n"
-        "This is fine for testing, but for production use:\n"
-        "  - Copy presets to a separate folder (e.g., 'my_profiles')\n"
-        "  - Set 'profiles_dir' in settings.json to that path\n"
-        "  - See README.md for details.",
-        self._profiles_dir
-    )
+                "Using default profile_presets directory: %s\n"
+                "This is fine for testing, but for production use:\n"
+                "  - Copy presets to a separate folder (e.g., 'my_profiles')\n"
+                "  - Set 'profiles_dir' in settings.json to that path\n"
+                "  - See README.md for details.",
+                self._profiles_dir
+            )
         # otherwise use the path as given
         else:
             self._profiles_dir = Path(raw)

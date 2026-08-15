@@ -9,6 +9,7 @@ from core.profile_manager import ProfileManager
 def main():
     # logger
     logger = logging.getLogger(__name__)
+    logging.basicConfig(filename='smarty_music_downloader.log', level=logging.info)
 
     # main parser
     parser = argparse.ArgumentParser(description="Smarty Music Downloader")
@@ -21,13 +22,22 @@ def main():
     settings_parser.add_argument("--reset", metavar="NAME", help="--reset name")                        # reset a single setting
     settings_parser.add_argument("--reset_all", action="store_true", help="--reset_all")                # reset all
 
+    # profile subparser
+    profile_parser = subparsers.add_parser("profile", help="--list, --profile name, --path name")
+    profile_parser.add_argument("--list", action="store_true", help="--list")                          # list_profiles
+    profile_parser.add_argument("--exists", metavar="NAME", help="--exists name")                      # profile_exists
+    profile_parser.add_argument("--path", metavar="NAME", help="--path name")                          # profile_path
+
     # args
     args = parser.parse_args()
 
-    if args.command == "settings":
-        # instance of the settings class
-        settings = Settings()
+    # instance of the settings class
+    settings = Settings()
 
+    # instance of the ProfileManager class
+    profile_manager = ProfileManager(settings)
+
+    if args.command == "settings":
         if args.set:
             name, value = args.set
             settings.set(name, value)
@@ -49,11 +59,17 @@ def main():
                 print("All settings have been reset to default.")
             else:
                 print("Reset cancelled")
-        else:
-            print(f"not found: {args.command}, try --help")
-            
-
-
+    elif args.command == "profile":
+        if args.list:
+            print(profile_manager.list_profiles())
+        if args.exists:
+            name = args.exists
+            print(profile_manager.profile_exists(name))
+        if args.path:
+            name = args.path
+            print(profile_manager.profile_path(name))
+    else:
+        print(f"not found: {args.command}, try --help")
 
 if __name__ == "__main__":
     main()
