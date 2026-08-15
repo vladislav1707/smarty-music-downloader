@@ -74,7 +74,6 @@ class Settings:
                 logger.info("Setting %s to default value: %s", key, value)
         # load from file into _data
         self._data = loaded
-        logger.info("Settings reloaded successfully")
     
     # COMPLETE reset of settings
     def reset_all(self) -> None:

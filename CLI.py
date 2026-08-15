@@ -9,7 +9,7 @@ from core.profile_manager import ProfileManager
 def main():
     # logger
     logger = logging.getLogger(__name__)
-    logging.basicConfig(filename='smarty_music_downloader.log', level=logging.INFO)
+    logging.basicConfig(filename='smarty_music_downloader.log', filemode='w', level=logging.INFO)
 
     # main parser
     parser = argparse.ArgumentParser(description="Smarty Music Downloader")

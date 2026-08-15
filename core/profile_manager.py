@@ -54,10 +54,8 @@ class ProfileManager:
                     # if the line is not empty and not a comment, add to links
                     if line and not line.startswith("#"):
                         links.append(line)
-        except (PermissionError, OSError) as e:
+        except (PermissionError, OSError, UnicodeDecodeError) as e:
             logger.error("Failed to open %s: %s", sources_file, e)
-        except (UnicodeDecodeError) as e:
-            logger.error("UnicodeDecodeError in %s: %s", sources_file, e)
         return links
 
     # get list of download links for all profiles
