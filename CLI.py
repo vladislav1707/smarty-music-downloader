@@ -13,8 +13,8 @@ def main():
 
     # main parser
     parser = argparse.ArgumentParser(description="Smarty Music Downloader")
+    parser.add_argument('--version', action='version', version=f'Smarty Music Downloader {__version__}')
     subparsers = parser.add_subparsers(dest="command", required=True, help="Available commands:")
-parser.add_argument('--version', action='version', version=f'Smarty Music Downloader {__version__}')
 
     # settings subparser
     settings_parser = subparsers.add_parser("settings", help="--set name value, --get name, --reset name, --reset_all")
