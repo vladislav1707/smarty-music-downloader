@@ -18,7 +18,7 @@ class Settings:
     # default settings
     DEFAULTS = {
     "max_working_proxies": 5,
-    "proxy_provider": "github_free_proxy_list",
+    "proxy_url": "https://raw.githubusercontent.com/proxifly/free-proxy-list/refs/heads/main/proxies/protocols/socks5/data.txt",
     "profiles_dir": "profile_presets" # "profile_presets" is a special value that points to presets
     }
 

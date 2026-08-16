@@ -6,7 +6,7 @@ import logging
 from pathlib import Path
 from typing import List
 
-# Create a logger with the same name as the file (profile_manager)
+# create a logger with the same name as the file (profile_manager)
 logger = logging.getLogger(__name__)
 
 ROOT_DIR = Path(__file__).parent.parent # go up two levels
