@@ -4,6 +4,8 @@ import logging
 from core.settings import Settings
 from core.profile_manager import ProfileManager
 
+__version__ = "0.0.0"
+
 def main():
     # logger
     logger = logging.getLogger(__name__)
@@ -11,6 +13,9 @@ def main():
 
     # main parser
     parser = argparse.ArgumentParser(description="Smarty Music Downloader")
+    # version
+    parser.add_argument('--version', action='version', version=f'Smarty Music Downloader {__version__}')
+    # subparsers
     subparsers = parser.add_subparsers(dest="command", required=True, help="Available commands:")
 
     # settings subparser
