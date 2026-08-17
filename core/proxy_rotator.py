@@ -41,6 +41,6 @@ class ProxyRotator:
             logger.debug(f"Switched to proxy: {self._current_proxy}")
     
     # get the current proxy
-    def get_proxy(self):
+    def get_proxy(self) -> str:
         self._update_proxy()
         return self._current_proxy
