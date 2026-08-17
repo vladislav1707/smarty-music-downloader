@@ -9,6 +9,10 @@
   - [задачи модуля profile\_manager](#задачи-модуля-profile_manager)
   - [конструктор класса ProfileManager](#конструктор-класса-profilemanager)
   - [методы класса ProfileManager](#методы-класса-profilemanager)
+- [модуль proxy\_manager](#модуль-proxy_manager)
+  - [задачи модуля proxy\_manager](#задачи-модуля-proxy_manager)
+  - [конструктор класса ProxyManager](#конструктор-класса-proxymanager)
+  - [методы класса ProxyManager](#методы-класса-proxymanager)
 
 # модуль settings
 ## задачи модуля settings
@@ -49,3 +53,15 @@ DEFAULTS это словарь с настройками по умолчанию
 * ```list_profiles(self) -> List[str]:``` выводит список доступных профилей
 * ```profile_exists(self, name: str) -> bool:``` принимает на вход имя профиля и возвращает булевое значение в зависимости от существования профиля
 * ```profile_path(self, name: str) -> Path:``` принимает на вход имя профиля и возвращает к нему путь
+
+# модуль proxy_manager
+## задачи модуля proxy_manager
+Этот модуль должен возвращать по запросу список прокси
+
+## конструктор класса ProxyManager
+\_\_init\_\_(self, settings: Settings):
+* Принимает на вход ссылку на экземпляр класса настроек
+
+* Делает еще пару мелких действий(проверка на ошибки, запись url в приватное поле)
+## методы класса ProxyManager
+* ```fetch_proxies(self) -> List[str]:``` возвращает список содержащий прокси
