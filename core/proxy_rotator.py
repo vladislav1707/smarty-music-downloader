@@ -18,24 +18,29 @@ class ProxyRotator:
         self._proxy_list = []
         self._current_proxy = None
 
-    # проверка на то что требуется обновление
+    # check if a refresh is needed
     def _need_refresh(self) -> bool:
         return (time.monotonic() - self._last_update) >= self._refresh_interval
 
-    # если требуется обновление то обновить список прокси
+    # update the proxy list if needed
     def _update_proxy(self):
         if self._need_refresh() or self._current_proxy == None:
             self._proxy_list = self._proxy_manager.fetch_proxies()
             self._last_update = time.monotonic()
+            if self._proxy_list:
+                logger.info(f"Proxy list updated: fetched {len(self._proxy_list)} proxies")
+            else:
+                logger.warning("Proxy list updated: fetched 0 proxies (empty list)")
 
-    # сменить прокси на следующий
+    # switch to the next proxy
     def next_proxy(self):
         self._update_proxy()
-        # выбрать последний элемент списка прокси в качестве текущего прокси а так же удалить его
+        # take the last proxy from the list as the current one and remove it
         if self._proxy_list != []:
             self._current_proxy = self._proxy_list.pop()
+            logger.debug(f"Switched to proxy: {self._current_proxy}")
     
-    # получить текущий прокси
+    # get the current proxy
     def get_proxy(self):
         self._update_proxy()
         return self._current_proxy
