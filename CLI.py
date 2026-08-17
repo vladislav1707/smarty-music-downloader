@@ -3,8 +3,8 @@ import logging
 # import modules from core
 from core.settings import Settings
 from core.profile_manager import ProfileManager
-
-__version__ = "0.0.0"
+# version
+from version import __version__
 
 def main():
     # logger
