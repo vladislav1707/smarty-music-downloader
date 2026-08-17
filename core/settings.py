@@ -1,5 +1,3 @@
-# TODO: сделать docstring
-
 import json
 import logging
 from pathlib import Path
@@ -44,6 +42,11 @@ class Settings:
     # read a setting (getter)
     def get(self, name: str) -> Any:
         return self._data.get(name)
+
+    # prints all settings in a readable format
+    def show_all(self) -> None:
+        for key, value in self._data.items():
+            print(f"{key}: {value}")
 
     # change a setting (setter)
     def set(self, name: str, value: Any) -> None:

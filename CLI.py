@@ -22,8 +22,9 @@ def main():
     settings_parser = subparsers.add_parser("settings", help="--set name value, --get name, --reset name, --reset_all")
     settings_parser.add_argument("--set", nargs=2, metavar=("NAME", "VALUE"), help="--set name value")              # set
     settings_parser.add_argument("--get", metavar="NAME", help="--get name")                                        # get
+    settings_parser.add_argument("--show_all", action="store_true", help="--show_all")                                # show_all
     settings_parser.add_argument("--reset", metavar="NAME", help="--reset name")                                    # reset a single setting
-    settings_parser.add_argument("--reset_all", action="store_true", help="--reset_all")                            # reset all
+    settings_parser.add_argument("--reset_all", action="store_true", help="--reset_all")                            # reset_all
 
     # profile subparser
     profile_parser = subparsers.add_parser("profile", help="--list, --exists name, --path name, --links name, --links-all")
@@ -31,7 +32,7 @@ def main():
     profile_parser.add_argument("--exists", metavar="NAME", help="--exists name")                                   # profile_exists
     profile_parser.add_argument("--path", metavar="NAME", help="--path name")                                       # profile_path
     profile_parser.add_argument("--links", metavar="NAME", help="--links name")                                     # links
-    profile_parser.add_argument("--links_all", action="store_true", help="--links-all")                             # links_all
+    profile_parser.add_argument("--links_all", action="store_true", help="--links_all")                             # links_all
 
     # args
     args = parser.parse_args()
@@ -51,6 +52,8 @@ def main():
         elif args.get:
             name = args.get
             print(f"get: {name} = {settings.get(name)}")
+        elif args.show_all:
+            settings.show_all()
         elif args.reset:
             name = args.reset
             settings.reset(name)

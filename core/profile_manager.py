@@ -1,5 +1,3 @@
-# TODO: сделать docstring
-
 from .settings import Settings
 import json
 import logging
