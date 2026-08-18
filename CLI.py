@@ -22,7 +22,7 @@ def main():
     settings_parser = subparsers.add_parser("settings", help="--set name value, --get name, --reset name, --reset_all")
     settings_parser.add_argument("--set", nargs=2, metavar=("NAME", "VALUE"), help="--set name value")              # set
     settings_parser.add_argument("--get", metavar="NAME", help="--get name")                                        # get
-    settings_parser.add_argument("--show_all", action="store_true", help="--show_all")                                # show_all
+    settings_parser.add_argument("--show_all", action="store_true", help="--show_all")                              # show_all
     settings_parser.add_argument("--reset", metavar="NAME", help="--reset name")                                    # reset a single setting
     settings_parser.add_argument("--reset_all", action="store_true", help="--reset_all")                            # reset_all
 
