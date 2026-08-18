@@ -61,10 +61,27 @@ class Downloader:
                     # пауза
                     time.sleep(1)
 
+    def download_all(self):
+        # сохранить список профилей
+        profiles = self._profile_manager.list_profiles()
+        # если профилей нет то warning и конец выполнения функции
+        if not profiles:
+            logger.warning("No profiles found in profiles_dir")
+            return
+        # пройтись по всем профилям и для каждого из них:
+        for i in range(len(profiles)):
+            name = profiles[i]
+            try:
+                self.download_profile(name)
+                logger.info("Profile \"%s\" processed successfully", name)
+            except Exception as e:
+                logger.error("Failed to process profile \"%s\": %s", name, str(e))
+
+
     # убедится что прокси не None
     def _ensure_proxy(self, ytdlp_args: dict):
-        while ytdlp_args['proxy'] is None:
+        while ytdlp_args["proxy"] is None:
             logger.warning("No proxy available, waiting 5 seconds...")
             time.sleep(5)
             self._proxy_rotator.next_proxy()
-            ytdlp_args['proxy'] = self._proxy_rotator.get_proxy()
+            ytdlp_args["proxy"] = self._proxy_rotator.get_proxy()
