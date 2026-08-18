@@ -1,7 +1,7 @@
 import time
 import logging
-from proxy_manager import ProxyManager
-from settings import Settings
+from .proxy_manager import ProxyManager
+from .settings import Settings
 
 # create a logger with the same name as the file (proxy_rotator)
 logger = logging.getLogger(__name__)

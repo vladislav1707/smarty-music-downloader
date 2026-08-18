@@ -3,6 +3,8 @@ import logging
 # import modules from core
 from core.settings import Settings
 from core.profile_manager import ProfileManager
+from core.proxy_rotator import ProxyRotator
+from core.downloader import Downloader
 # version
 from version import __version__
 
@@ -34,14 +36,26 @@ def main():
     profile_parser.add_argument("--links", metavar="NAME", help="--links name")                                     # links
     profile_parser.add_argument("--links_all", action="store_true", help="--links_all")                             # links_all
 
+    # downloader subparser
+    downloader_parser = subparsers.add_parser("download", help="--all, --profile name")
+    downloader_parser.add_argument("--all", action="store_true", help="-all")                                       # all
+    downloader_parser.add_argument("--profile", metavar="NAME", help="--profile name")                              # profile
+
+
     # args
     args = parser.parse_args()
 
-    # instance of the settings class
+    # instance of the Settings class
     settings = Settings()
 
     # instance of the ProfileManager class
     profile_manager = ProfileManager(settings)
+
+    # instance of the ProxyRotator class
+    proxy_rotator = ProxyRotator(settings)
+
+    # instance of the Downloader class
+    downloader = Downloader(settings, profile_manager, proxy_rotator)
 
     if args.command == "settings":
         if args.set:
@@ -81,6 +95,12 @@ def main():
             print(len(profile_manager.get_links(name)))
         elif args.links_all:
             print(len(profile_manager.get_all_links()))
+    elif args.command == "download":
+        if args.all:
+            downloader.download_all()
+        elif args.profile:
+            name = args.profile
+            downloader.download_profile(name)
     else:
         print(f"not found: {args.command}, try --help")
 

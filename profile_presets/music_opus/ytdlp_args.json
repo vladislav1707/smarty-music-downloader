@@ -1,21 +1,13 @@
-[
-  "--socket-timeout",
-  "15",
-  "--retries",
-  "3",
-  "--retry-sleep",
-  "0",
-  "--fragment-retries",
-  "1",
-  "--no-check-certificate",
-  "--format",
-  "bestvideo[height<=1080]+bestaudio/best[height<=1080]",
-  "--merge-output-format",
-  "mp4",
-  "--continue",
-  "--ignore-errors",
-  "--output",
-  "./downloaded_videos/%(uploader)s/%(title)s.%(ext)s",
-  "--download-archive",
-  "./archive.txt"
-]
+{
+    "socket_timeout": 30,
+    "retries": 3,
+    "retry_sleep": 0,
+    "fragment_retries": 1,
+    "no_check_certificate": true,
+    "format": "bestvideo[height<=1080]+bestaudio/best[height<=1080]",
+    "merge_output_format": "mp4",
+    "continue": true,
+    "ignore_errors": true,
+    "outtmpl": "./downloaded_videos/%(uploader)s/%(title)s.%(ext)s",
+    "download_archive": "./archive.txt"
+}
