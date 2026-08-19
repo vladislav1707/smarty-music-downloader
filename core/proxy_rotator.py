@@ -25,7 +25,7 @@ class ProxyRotator:
 
     # update the proxy list if needed
     def _update_proxy(self):
-        if self._need_refresh() or self._current_proxy == None:
+        if self._need_refresh():
             self._proxy_list = self._proxy_manager.fetch_proxies()
             self._last_update = time.monotonic()
             if self._proxy_list:
@@ -42,6 +42,11 @@ class ProxyRotator:
             if self._proxy_list != []:
                 self._current_proxy = self._proxy_list.pop()
                 logger.debug(f"Switched to proxy: {self._current_proxy}")
+            # if there are no proxies in the list, wait for an update
+            else:
+                logger.debug("No proxies available, waiting for refresh...")
+                time.sleep(1)
+                continue
 
             if self._is_proxy_working(self._current_proxy):
                 return
@@ -55,6 +60,8 @@ class ProxyRotator:
 
     # checking if the proxy is working
     def _is_proxy_working(self, proxy: str) -> bool:
+        if proxy is None:
+            return false
         try:
             # It might be a SOCKS proxy, not just HTTP/HTTPS
             requests.get(
