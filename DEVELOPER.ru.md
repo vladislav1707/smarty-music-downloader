@@ -1,5 +1,5 @@
-# Оглавление
-- [Оглавление](#оглавление)
+# оглавление
+- [оглавление](#оглавление)
 - [модуль settings](#модуль-settings)
   - [задачи модуля settings](#задачи-модуля-settings)
   - [конструктор класса settings](#конструктор-класса-settings)
@@ -18,6 +18,11 @@
   - [конструктор класса ProxyRotator](#конструктор-класса-proxyrotator)
   - [приватные методы ProxyRotator](#приватные-методы-proxyrotator)
   - [публичные методы ProxyRotator](#публичные-методы-proxyrotator)
+- [модуль downloader](#модуль-downloader)
+  - [задачи модуля downloader](#задачи-модуля-downloader)
+  - [конструктор класса Downloader](#конструктор-класса-downloader)
+  - [приватные методы Downloader](#приватные-методы-downloader)
+  - [публичные методы Downloader](#публичные-методы-downloader)
 
 # модуль settings
 ## задачи модуля settings
@@ -83,7 +88,25 @@ DEFAULTS это словарь с настройками по умолчанию
 ## приватные методы ProxyRotator
 * ```_need_refresh(self) -> bool:``` проверяет требуется ли списку прокси обновление
 * ```_update_proxy(self):``` обновляет список прокси
+* ```_is_proxy_working(self, proxy: str) -> bool:``` проверяет работает ли прокси и возвращает bool
 
 ## публичные методы ProxyRotator
 * ```next_proxy(self):``` меняет текущий прокси на следующий рабочий в списке
 * ```get_proxy(self) -> str:``` возвращает текущий прокси
+
+# модуль downloader
+## задачи модуля downloader
+этот модуль должен скачивать ссылки из профилей применяя к ним аргументы сохраненные в том же профили где ссылки
+## конструктор класса Downloader
+```__init__(self, settings: Settings, profile_manager: ProfileManager, proxy_rotator: ProxyRotator):```
+* принимает экземпляр класса Settings
+
+* принимает экземпляр класса ProfileManager
+
+* принимает экземпляр класса ProxyRotator
+## приватные методы Downloader
+```_ensure_proxy(self, ytdlp_args: dict):``` убеждается что прокси не None, очень важно чтобы у пользователя временно не сломался ютуб
+
+## публичные методы Downloader
+```download_profile(self, name: str):``` скачивает все ссылки из конкретного профиля применяя к ним аргументы из этого же профиля
+```download_all(self):``` скачивает ссылки из профилей применяя к каждой ссылке аргументы профиля которому она принадлежит

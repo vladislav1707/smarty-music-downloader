@@ -1,5 +1,6 @@
 import time
 import logging
+import requests
 from .proxy_manager import ProxyManager
 from .settings import Settings
 
@@ -34,13 +35,33 @@ class ProxyRotator:
 
     # switch to the next proxy
     def next_proxy(self):
-        self._update_proxy()
-        # take the last proxy from the list as the current one and remove it
-        if self._proxy_list != []:
-            self._current_proxy = self._proxy_list.pop()
-            logger.debug(f"Switched to proxy: {self._current_proxy}")
+        while True:
+            self._update_proxy()
+
+            # take the last proxy from the list as the current one and remove it
+            if self._proxy_list != []:
+                self._current_proxy = self._proxy_list.pop()
+                logger.debug(f"Switched to proxy: {self._current_proxy}")
+
+            if self._is_proxy_working(self._current_proxy):
+                return
+            else:
+                logger.debug("Proxy %s is dead, removed", self._current_proxy)
     
     # get the current proxy
     def get_proxy(self) -> str:
         self._update_proxy()
         return self._current_proxy
+
+    # checking if the proxy is working
+    def _is_proxy_working(self, proxy: str) -> bool:
+        try:
+            # It might be a SOCKS proxy, not just HTTP/HTTPS
+            requests.get(
+                "https://www.youtube.com",
+                proxies={"http": proxy, "https": proxy},
+                timeout=5
+            )
+            return True
+        except Exception:
+            return False
