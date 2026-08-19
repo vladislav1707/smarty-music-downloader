@@ -29,29 +29,31 @@ class ProxyRotator:
             self._proxy_list = self._proxy_manager.fetch_proxies()
             self._last_update = time.monotonic()
             if self._proxy_list:
-                logger.info(f"Proxy list updated: fetched {len(self._proxy_list)} proxies")
+                logger.info("Proxy list updated: fetched %s proxies", len(self._proxy_list))
             else:
                 logger.warning("Proxy list updated: fetched 0 proxies (empty list)")
 
     # switch to the next proxy
     def next_proxy(self):
+        counter = 0
         while True:
+            counter += 1
+
             self._update_proxy()
 
             # take the last proxy from the list as the current one and remove it
             if self._proxy_list != []:
                 self._current_proxy = self._proxy_list.pop()
-                logger.debug(f"Switched to proxy: {self._current_proxy}")
+                logger.info("%s | attempt to switch proxy: %s", counter, self._current_proxy)
             # if there are no proxies in the list, wait for an update
             else:
-                logger.debug("No proxies available, waiting for refresh...")
-                time.sleep(1)
+                logger.info("No proxies available, waiting for refresh...")
+                time.sleep(10)
                 continue
 
             if self._is_proxy_working(self._current_proxy):
+                logger.info("Working proxy found: %s", self._current_proxy)
                 return
-            else:
-                logger.debug("Proxy %s is dead, removed", self._current_proxy)
     
     # get the current proxy
     def get_proxy(self) -> str:
@@ -67,7 +69,7 @@ class ProxyRotator:
             requests.get(
                 "https://www.youtube.com",
                 proxies={"http": proxy, "https": proxy},
-                timeout=5
+                timeout=(1, 2)
             )
             return True
         except Exception:

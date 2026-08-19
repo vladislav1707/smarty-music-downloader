@@ -21,7 +21,7 @@ class ProfileManager:
             self._profiles_dir = ROOT_DIR / "profile_presets"
             logger.warning(
                 "Using default profile_presets directory: %s\n"
-                "This is fine for testing, but for production use:\n"
+                "recommended actions:\n"
                 "  - Copy presets to a separate folder (e.g., 'my_profiles')\n"
                 "  - Set 'profiles_dir' in settings.json to that path\n"
                 "  - See README.md for details.",

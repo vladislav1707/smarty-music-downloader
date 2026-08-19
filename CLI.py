@@ -1,5 +1,6 @@
 import argparse
 import logging
+import sys
 # import modules from core
 from core.settings import Settings
 from core.profile_manager import ProfileManager
@@ -9,9 +10,20 @@ from core.downloader import Downloader
 from version import __version__
 
 def main():
-    # logger
-    logger = logging.getLogger(__name__)
-    logging.basicConfig(filename='smarty_music_downloader.log', filemode='w', level=logging.INFO)
+    # logging settings
+    logger = logging.getLogger()
+    logger.setLevel(logging.INFO)
+
+    file_handler = logging.FileHandler('smarty_music_downloader.log', mode='w', encoding='utf-8')
+    file_handler.setLevel(logging.INFO)
+    file_handler.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
+
+    console_handler = logging.StreamHandler(sys.stdout)
+    console_handler.setLevel(logging.INFO)
+    console_handler.setFormatter(logging.Formatter('%(message)s'))
+
+    logger.addHandler(file_handler)
+    logger.addHandler(console_handler)
 
     # main parser
     parser = argparse.ArgumentParser(description="Smarty Music Downloader")
