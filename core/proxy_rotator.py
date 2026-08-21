@@ -1,7 +1,6 @@
 
-# TODO: разобраться с многопоточностью, пул рабочих прокси(ДОЛЖЕН ОБНОВЛЯТЬСЯ МНОГОПОТОЧНО), разобраться с тем какие новые настройки добавить
-# TODO: после завершения написания модуля перевести комментарии на английский, либо сделать исключение только для этого модуля и оставить все русским
-# TODO: так как в этом модуле есть шанс что изменения будут чаще всего
+# TODO: перевод комментов на английский/сделать исключение оставить на русском
+# TODO: исправить документацию с учетом изменений
 
 import time
 import logging
@@ -21,7 +20,6 @@ class ProxyRotator:
         self._settings = settings
         self._refresh_interval = self._settings.get("proxy_refresh_interval")
         self._max_validation_threads = self._settings.get("max_validation_threads")
-        self._max_working_proxies = self._settings.get("max_working_proxies")
 
         # менеджер прокси
         self._proxy_manager = proxy_manager
@@ -67,29 +65,24 @@ class ProxyRotator:
                         break
                 for proxy in self._proxy_list:
                     self._validation_queue.put(proxy)
-            time.sleep(0.1)
+            time.sleep(self._refresh_interval)
 
-    #! Брать из очереди прокси и проверять в бесконечном цикле. Нужно предусмотреть отключение потоков когда они не нужны но не удаление.
-    #! Этот метод нужен для потоков проверки прокси
+    # Брать из очереди прокси и проверять в бесконечном цикле. Нужно предусмотреть отключение потоков когда они не нужны но не удаление.
+    # Этот метод нужен для потоков проверки прокси
     def _worker_loop(self):
         proxy = None
         # если сейчас запущена проверка
         while True:
-            # безопасно прочесть длину списка
-            with self.locker:
-                working_proxy_list_len = len(self.working_proxy_list)
-            # если длина не достигла лимита
-            if (working_proxy_list_len < self._max_working_proxies):
-                # записать в переменную proxy из self._validation_queue последний прокси и удалить из списка
-                try:
-                    proxy = self._validation_queue.get(timeout=1.0)
-                except queue.Empty:
-                    continue
-                # валидация
-                if self._validate(proxy):
-                    with self.locker:
-                        self.working_proxy_list.append(proxy)
-                self._validation_queue.task_done()
+            # записать в переменную proxy из self._validation_queue последний прокси и удалить из списка
+            try:
+                proxy = self._validation_queue.get(timeout=1.0)
+            except queue.Empty:
+                continue
+            # валидация
+            if self._validate(proxy):
+                with self.locker:
+                    self.working_proxy_list.append(proxy)
+            self._validation_queue.task_done()
 
     # update the proxy list if needed
     def _update_proxy_list(self):
