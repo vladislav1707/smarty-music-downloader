@@ -35,15 +35,15 @@ class ProxyRotator:
     # этот метод должен запустить поиск рабочих прокси(многопоточный):
     # скачать -> валидировать(многопоточно! Нужно т.к. proxifly валидирует недостаточно и 99% не работают с ютубом) -> записать в working_proxy_list
     def update_working_proxy_list(self):
-        self._update_proxy()
-        pass
+        self._update_proxy_list()
+
 
     # меняет current_proxy на следующий в списке
     def next_proxy(self):
         pass
 
     # update the proxy list if needed
-    def _update_proxy(self):
+    def _update_proxy_list(self):
         if self._need_refresh() or self._current_proxy == None:
             self._proxy_list = self._proxy_manager.fetch_proxies()
             self._last_update = time.monotonic()
@@ -55,3 +55,24 @@ class ProxyRotator:
     # check if a refresh is needed
     def _need_refresh(self) -> bool:
         return (time.monotonic() - self._last_update) >= self._refresh_interval
+
+    # проверить только 1 прокси на работоспособность
+    def _validate(self, proxy: str):
+        try:
+            # HEAD-запрос с отключенной проверкой SSL
+            response = requests.head(
+                "https://www.youtube.com/robots.txt",   # тестовый URL
+                proxies={                               # настройки прокси
+                    "http": proxy,
+                    "https": proxy,
+                },
+                timeout=(3, 5),                         # таймауты: 3 сек на соединение, 5 сек на чтение
+                verify=False,                           # отключить лишние проверки
+                allow_redirects=True                    # разрешаем редиректы
+            )
+            # успешный статус (2xx или даже 3xx)
+            return response.status_code < 400
+        except:
+            # любая ошибка = прокси не работает
+            return False
+        
