@@ -13,7 +13,7 @@
   - [задачи модуля proxy\_manager](#задачи-модуля-proxy_manager)
   - [конструктор класса ProxyManager](#конструктор-класса-proxymanager)
   - [методы класса ProxyManager](#методы-класса-proxymanager)
-- [модуль proxy\_rotator](#модуль-proxy_rotator)
+- [модуль proxy\_rotator (УСТАРЕЛО)](#модуль-proxy_rotator-устарело)
   - [задачи модуля proxy\_rotator](#задачи-модуля-proxy_rotator)
   - [конструктор класса ProxyRotator](#конструктор-класса-proxyrotator)
   - [приватные методы ProxyRotator](#приватные-методы-proxyrotator)
@@ -65,7 +65,7 @@ DEFAULTS это словарь с настройками по умолчанию
 * ```profile_exists(self, name: str) -> bool:``` принимает на вход имя профиля и возвращает булевое значение в зависимости от существования профиля
 * ```profile_path(self, name: str) -> Path:``` принимает на вход имя профиля и возвращает к нему путь
 
-# модуль proxy_manager
+# модуль proxy_manager 
 ## задачи модуля proxy_manager
 Этот модуль должен возвращать по запросу список прокси
 
@@ -77,7 +77,7 @@ DEFAULTS это словарь с настройками по умолчанию
 ## методы класса ProxyManager
 * ```fetch_proxies(self) -> List[str]:``` возвращает список содержащий прокси
 
-# модуль proxy_rotator
+# модуль proxy_rotator (УСТАРЕЛО)
 ## задачи модуля proxy_rotator
 Этот модуль должен возвращать текущий прокси по запросу, а так же время от времени обновлять список прокси и помогать в ротации прокси
 ## конструктор класса ProxyRotator
