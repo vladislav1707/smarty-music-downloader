@@ -12,3 +12,5 @@ build/
 *.exe
 *.log
 .vscode
+downloaded_music
+*.exe

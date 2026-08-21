@@ -1,7 +1,6 @@
 
 # TODO: перевод комментов на английский/сделать исключение оставить на русском
 # TODO: исправить документацию с учетом изменений
-# TODO: сделать next_proxy() и get_proxy()
 
 import time
 import logging
@@ -47,20 +46,13 @@ class ProxyRotator:
     def next_proxy(self):
         # берём прокси из списка под блокировкой
         with self.locker:
-            # если прокси нет то текущий прокси = None
-            if not self.working_proxy_list:
+            # если есть прокси то переключится на него, иначе вывести предупреждение что прокси не найдены
+            if self.working_proxy_list:
+                self.current_proxy = self.working_proxy_list.pop(0)
+                logger.info(f"Switched to proxy: {self.current_proxy}")
+            else:
                 self.current_proxy = None
-                return
-            # взять прокси из начала списка
-            proxy = self.working_proxy_list.pop(0)
-
-        # проверка ВНЕ блокировки (это долгая операция)
-        if self._validate(proxy):
-            with self.locker:
-                self.current_proxy = proxy
-        else:
-            # если не работает то повторить попытку с помощью рекурсии
-            self.next_proxy()
+                logger.warning("No working proxies available")
 
     # просто вернет текущий прокси
     def get_proxy(self) -> str:
@@ -128,12 +120,12 @@ class ProxyRotator:
         try:
             # HEAD-запрос с отключенной проверкой SSL
             response = requests.head(
-                "https://www.youtube.com/robots.txt",   # тестовый URL
+                "https://www.youtube.com/",             # тестовый URL
                 proxies={                               # настройки прокси
                     "http": proxy,
                     "https": proxy,
                 },
-                timeout=(3, 5),                        # таймауты: 3 сек на соединение, 5 сек на чтение
+                timeout=(3, 5),                        # таймауты
                 verify=False,                           # отключить лишние проверки
                 allow_redirects=True                    # разрешаем редиректы
             )

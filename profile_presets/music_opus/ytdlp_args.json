@@ -4,6 +4,8 @@
     "retry_sleep": 0,
     "fragment_retries": 1,
     "no_check_certificate": true,
+    "nocheckcertificate": true,
+    "no-check-certificate": true,
     "ignore_errors": true,
     "extract_audio": true,
     "audio_format": "opus",
