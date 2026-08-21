@@ -1,6 +1,7 @@
 
 # TODO: перевод комментов на английский/сделать исключение оставить на русском
 # TODO: исправить документацию с учетом изменений
+# TODO: сделать next_proxy() и get_proxy()
 
 import time
 import logging
@@ -15,20 +16,20 @@ from .settings import Settings
 logger = logging.getLogger(__name__)
 
 class ProxyRotator:
-    def __init__(self, settings: Settings, proxy_manager: ProxyManager):
+    def __init__(self, settings: Settings):
         # настройки
         self._settings = settings
         self._refresh_interval = self._settings.get("proxy_refresh_interval")
         self._max_validation_threads = self._settings.get("max_validation_threads")
 
         # менеджер прокси
-        self._proxy_manager = proxy_manager
+        self._proxy_manager = ProxyManager(self._settings)
         # последнее обновление списка прокси
         self._last_update = 0
         # текущий выбранный прокси
         self.current_proxy = None
         # список прокси (не фильтрованных)
-        self._proxy_list = proxy_manager.fetch_proxies()
+        self._proxy_list = self._proxy_manager.fetch_proxies()
         # очередь прокси
         self._validation_queue = queue.Queue()
         for proxy in self._proxy_list:
@@ -41,9 +42,30 @@ class ProxyRotator:
         # запустить автообновление списка рабочих прокси в другом потоке
         threading.Thread(target=self._update_working_proxy_list, daemon=True).start()
 
-    # меняет current_proxy на следующий в списке рабочих прокси
+    # меняет current_proxy на следующий в списке рабочих прокси, пропуская нерабочие
     def next_proxy(self):
-        pass
+        # берём прокси из списка под блокировкой
+        with self.locker:
+            # если прокси нет то текущий прокси = None
+            if not self.working_proxy_list:
+                self.current_proxy = None
+                return
+            # взять прокси из начала списка
+            proxy = self.working_proxy_list.pop(0)
+
+        # проверка ВНЕ блокировки (это долгая операция)
+        if self._validate(proxy):
+            with self.locker:
+                self.current_proxy = proxy
+        else:
+            # если не работает то повторить попытку с помощью рекурсии
+            self.next_proxy()
+
+    # просто вернет текущий прокси
+    def get_proxy(self) -> str:
+        # блокировка на всякий случай
+        with self.locker:
+            return self.current_proxy
 
     # этот метод должен запустить поиск рабочих прокси(многопоточный):
     # скачать -> валидировать(многопоточно! Нужно т.к. proxifly валидирует недостаточно и 99% не работают с ютубом) -> записать в working_proxy_list
@@ -79,9 +101,11 @@ class ProxyRotator:
             except queue.Empty:
                 continue
             # валидация
+            logger.info("proxy validation: %s", proxy)
             if self._validate(proxy):
                 with self.locker:
                     self.working_proxy_list.append(proxy)
+                logger.info("proxy validation was successful: %s", proxy)
             self._validation_queue.task_done()
 
     # update the proxy list if needed
