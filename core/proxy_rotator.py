@@ -7,7 +7,6 @@ import time
 import logging
 import requests
 import threading
-from threading import Thread
 # core
 from .proxy_manager import ProxyManager
 from .settings import Settings
@@ -20,6 +19,7 @@ class ProxyRotator:
         # настройки
         self._settings = settings
         self._refresh_interval = self._settings.get("proxy_refresh_interval")
+        self._max_validation_threads = self._settings.get("max_validation_threads")
 
         # менеджер прокси
         self._proxy_manager = proxy_manager
@@ -29,17 +29,33 @@ class ProxyRotator:
         self.current_proxy = None
         # список прокси (не фильтрованных)
         self._proxy_list = proxy_manager.fetch_proxies()
+        # очередь прокси
+        self.validation_queue = None
         # список рабочих прокси(обновлять каждые N секунд, значение N указать в настройках)
         self.working_proxy_list = []
 
+        # запустить автообновление списка рабочих прокси в другом потоке
+        threading.Thread(target=self._update_working_proxy_list, daemon=True).start()
+
+    # меняет current_proxy на следующий в списке рабочих прокси
+    def next_proxy(self):
+        pass
+
     # этот метод должен запустить поиск рабочих прокси(многопоточный):
     # скачать -> валидировать(многопоточно! Нужно т.к. proxifly валидирует недостаточно и 99% не работают с ютубом) -> записать в working_proxy_list
-    def update_working_proxy_list(self):
-        self._update_proxy_list()
+    def _update_working_proxy_list(self):
+        while True:
+            # обновить список прокси если надо
+            self._update_proxy_list()
+            # коопировать список прокси для удобства
+            self.validation_queue = self._proxy_list.copy()
+            # создать заданное в настройках количество потоков для валидации прокси
+            for i in range(self._max_validation_threads):
+                threading.Thread(target=self._worker_loop, daemon=True).start()
 
-
-    # меняет current_proxy на следующий в списке
-    def next_proxy(self):
+    # Брать из очереди прокси и проверять в бесконечном цикле. Нужно предусмотреть отключение потоков когда они не нужны но не удаление.
+    # Этот метод нужен для потоков проверки прокси
+    def _worker_loop(self):
         pass
 
     # update the proxy list if needed
