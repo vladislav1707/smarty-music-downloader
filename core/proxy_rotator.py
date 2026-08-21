@@ -6,6 +6,7 @@
 import time
 import logging
 import requests
+import socks
 import threading
 import queue
 # core
@@ -132,13 +133,14 @@ class ProxyRotator:
                     "http": proxy,
                     "https": proxy,
                 },
-                timeout=(3, 5),                         # таймауты: 3 сек на соединение, 5 сек на чтение
+                timeout=(3, 5),                        # таймауты: 3 сек на соединение, 5 сек на чтение
                 verify=False,                           # отключить лишние проверки
                 allow_redirects=True                    # разрешаем редиректы
             )
             # успешный статус (2xx или даже 3xx)
             return response.status_code < 400
-        except:
+        except Exception as e:
+            logger.debug(f"Proxy {proxy} validation error: {e}")  
             # любая ошибка = прокси не работает
             return False
         

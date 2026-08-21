@@ -12,7 +12,7 @@ from version import __version__
 def main():
     # logging settings
     logger = logging.getLogger()
-    logger.setLevel(logging.INFO)
+    logger.setLevel(logging.DEBUG)
 
     file_handler = logging.FileHandler('smarty_music_downloader.log', mode='w', encoding='utf-8')
     file_handler.setLevel(logging.INFO)
@@ -63,12 +63,6 @@ def main():
     # instance of the ProfileManager class
     profile_manager = ProfileManager(settings)
 
-    # instance of the ProxyRotator class
-    proxy_rotator = ProxyRotator(settings)
-
-    # instance of the Downloader class
-    downloader = Downloader(settings, profile_manager, proxy_rotator)
-
     if args.command == "settings":
         if args.set:
             name, value = args.set
@@ -108,6 +102,12 @@ def main():
         elif args.links_all:
             print(len(profile_manager.get_all_links()))
     elif args.command == "download":
+        # instance of the ProxyRotator class
+        proxy_rotator = ProxyRotator(settings)
+
+        # instance of the Downloader class
+        downloader = Downloader(settings, profile_manager, proxy_rotator)
+        
         if args.all:
             downloader.download_all()
         elif args.profile:

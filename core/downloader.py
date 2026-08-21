@@ -81,10 +81,10 @@ class Downloader:
 
     # убедится что прокси не None
     def _ensure_proxy(self, ytdlp_args: dict):
-        self._proxy_rotator.next_proxy()
         attempts = 0
         while ytdlp_args["proxy"] is None:
             attempts += 1
             logger.info("%s | Waiting for proxies to be validated... (next check in 5s)", attempts)
             time.sleep(5)
+            self._proxy_rotator.next_proxy()
             ytdlp_args["proxy"] = self._proxy_rotator.get_proxy()

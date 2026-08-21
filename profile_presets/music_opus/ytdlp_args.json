@@ -4,10 +4,11 @@
     "retry_sleep": 0,
     "fragment_retries": 1,
     "no_check_certificate": true,
-    "format": "bestvideo[height<=1080]+bestaudio/best[height<=1080]",
-    "merge_output_format": "mp4",
-    "continue": true,
     "ignore_errors": true,
-    "outtmpl": "./downloaded_videos/%(uploader)s/%(title)s.%(ext)s",
-    "download_archive": "./archive.txt"
+    "extract_audio": true,
+    "audio_format": "opus",
+    "audio_quality": 0,
+    "continue": true,
+    "outtmpl": "./downloaded_music/%(uploader)s/%(title)s.%(ext)s",
+    "download_archive": "./archive_music.txt"
 }
