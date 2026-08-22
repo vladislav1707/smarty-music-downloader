@@ -31,7 +31,7 @@ class SMDownloader:
         return self._settings.get(name)
 
     def save_settings(self) -> None:
-        """Set the setting. Requires save_settings()"""
+        """Apply changes and save settings to the configuration file"""
         self._settings.save()
 
     def reload_settings(self) -> None:
@@ -39,8 +39,12 @@ class SMDownloader:
         self._settings.reload()
 
     def reset_setting(self, name: str) -> None:
-        """Reset single setting"""
+        """Reset single setting. Requires save_settings()"""
         self._settings.reset(name)
+
+    def reset_all_settings(self) -> None:
+        """Reset all settings. Requires save_settings()"""
+        self._settings.reset_all()
 
     def show_all_settings(self) -> None:
         """Print all settings"""
