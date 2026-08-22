@@ -1,4 +1,3 @@
 yt-dlp>=2023.0.0
 PySocks>=1.7.0
-ffmpeg
-deno
+ffmpeg-installer

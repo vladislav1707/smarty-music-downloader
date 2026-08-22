@@ -7,6 +7,8 @@ from .proxy_rotator import ProxyRotator
 import yt_dlp
 import time
 import logging
+import shutil
+import ffmpeg_installer
 
 # create a logger with the same name as the file (downloader)
 logger = logging.getLogger(__name__)
@@ -31,6 +33,11 @@ class Downloader:
             logger.warning("Profile \"%s\" contains no links", name)
             return
 
+        # проверить что ffmpeg есть и скачать если нет, а так же добавить в аргументы
+        self._ensure_ffmpeg()
+        if self._ffmpeg_path:
+            ytdlp_args['ffmpeg_location'] = self._ffmpeg_path
+
         ytdlp_args["proxy"] = self._proxy_rotator.get_proxy()
         self._ensure_proxy(ytdlp_args)
         # 3. для каждой ссылки в профиле скачать с помощью yt-dlp и подставить аргументы из профиля
@@ -53,7 +60,6 @@ class Downloader:
                         # yt-dlp завершился с ошибкой, но не выбросил исключение
                         raise Exception(f"yt-dlp returned error code {ret_code}")
                     
-                    logger.info("Successfully downloaded \"%s\" after %d attempt(s)", url, attempt)
                     success = True
                 except Exception as e:
                     logger.debug(
@@ -86,7 +92,7 @@ class Downloader:
                 logger.error("Failed to process profile \"%s\": %s", name, str(e))
 
 
-    # убедится что прокси не None
+    # убедится что прокси не None (ОЧЕНЬ ВАЖНО)
     def _ensure_proxy(self, ytdlp_args: dict):
         attempts = 0
         while ytdlp_args["proxy"] is None:
@@ -95,3 +101,30 @@ class Downloader:
             time.sleep(5)
             self._proxy_rotator.next_proxy()
             ytdlp_args["proxy"] = self._proxy_rotator.get_proxy()
+
+    # убедится что скачан ffmpeg, и если надо скачать
+    def _ensure_ffmpeg(self):
+        # если уже сохранен путь
+        if hasattr(self, '_ffmpeg_path') and self._ffmpeg_path:
+            return
+
+        # попытка найти в системе ffmpeg
+        system_ffmpeg = shutil.which('ffmpeg')
+        if system_ffmpeg:
+            self._ffmpeg_path = system_ffmpeg
+            logger.info(f"Using system ffmpeg: {system_ffmpeg}")
+            return
+
+        # если не найден то попытаться скачать через ffmpeg_installer
+        if ffmpeg_installer is not None:
+            try:
+                downloaded = ffmpeg_installer.ffmpeg_path
+                self._ffmpeg_path = downloaded
+                logger.info(f"ffmpeg not found in PATH, using downloaded version: {downloaded}")
+                return
+            except Exception as e:
+                logger.warning(f"could not install ffmpeg automatically: {e}")
+        else:
+            logger.warning("ffmpeg-installer not installed, please install ffmpeg manually.")
+
+        self._ffmpeg_path = None
