@@ -1,6 +1,5 @@
 
-# TODO: перевод комментов на английский/сделать исключение оставить на русском
-# TODO: исправить документацию с учетом изменений
+# TODO: перевод комментов на английский
 
 import time
 import logging
@@ -43,8 +42,8 @@ class ProxyRotator:
         # запустить автообновление списка рабочих прокси в другом потоке
         threading.Thread(target=self._update_working_proxy_list, daemon=True).start()
 
-    # меняет current_proxy на следующий в списке рабочих прокси, пропуская нерабочие
-    def next_proxy(self):
+    def next_proxy(self) -> None:
+        """Меняет current_proxy на следующий в списке рабочих прокси, пропуская нерабочие"""
         # берём прокси из списка под блокировкой
         with self.locker:
             # если есть прокси то переключится на него, иначе вывести предупреждение что прокси не найдены
@@ -55,15 +54,14 @@ class ProxyRotator:
                 self.current_proxy = None
                 logger.warning("No working proxies available")
 
-    # просто вернет текущий прокси
     def get_proxy(self) -> str:
+        """Просто вернет текущий прокси"""
         # блокировка на всякий случай
         with self.locker:
             return self.current_proxy
 
-    # этот метод должен запустить поиск рабочих прокси(многопоточный):
-    # скачать -> валидировать(многопоточно! Нужно т.к. proxifly валидирует недостаточно и 99% не работают с ютубом) -> записать в working_proxy_list
     def _update_working_proxy_list(self):
+        """Этот метод нужен чтобы создать воркеры и управлять ими"""
         # создать заданное в настройках количество потоков для валидации прокси    
         for i in range(self._max_validation_threads):
             threading.Thread(target=self._worker_loop, daemon=True).start()
@@ -83,9 +81,8 @@ class ProxyRotator:
                     self._validation_queue.put(proxy)
             time.sleep(self._refresh_interval)
 
-    # Брать из очереди прокси и проверять в бесконечном цикле. Нужно предусмотреть отключение потоков когда они не нужны но не удаление.
-    # Этот метод нужен для потоков проверки прокси
     def _worker_loop(self):
+        """Метод для воркеров. Содержит бесконечный цикл"""
         proxy = None
         # если сейчас запущена проверка
         while True:
@@ -102,8 +99,8 @@ class ProxyRotator:
                 logger.info("proxy validation was successful: %s", proxy)
             self._validation_queue.task_done()
 
-    # update the proxy list if needed
     def _update_proxy_list(self):
+        """Update the proxy list if needed"""
         if self._need_refresh() or self.current_proxy == None:
             self._proxy_list = self._proxy_manager.fetch_proxies()
             self._last_update = time.monotonic()
@@ -112,12 +109,12 @@ class ProxyRotator:
             else:
                 logger.warning("Proxy list updated: fetched 0 proxies (empty list)")
 
-    # check if a refresh is needed
     def _need_refresh(self) -> bool:
+        """Check if a refresh is needed"""
         return (time.monotonic() - self._last_update) >= self._refresh_interval
 
-    # проверить только 1 прокси на работоспособность
     def _validate(self, proxy: str) -> bool:
+        """Проверить только 1 прокси на работоспособность"""
         try:
             # если прокси socks5 или socks4
             if proxy.startswith(('socks5://', 'socks4://')):

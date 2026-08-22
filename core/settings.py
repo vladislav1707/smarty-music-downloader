@@ -22,8 +22,8 @@ class Settings:
     "max_validation_threads": 30
     }
 
-    # Settings class constructor
     def __init__(self):
+        """Settings class constructor"""
         # if path does not exist
         if not CONFIG_PATH.exists():
             logger.warning("Settings.json file not found, attempting to create it")
@@ -40,21 +40,21 @@ class Settings:
         # load settings from file into _data (dictionary on which operations are performed)
         self.reload()
     
-    # read a setting (getter)
     def get(self, name: str) -> Any:
+        """Read a setting (getter)"""
         return self._data.get(name)
 
-    # prints all settings in a readable format
     def show_all(self) -> None:
+        """Prints all settings in a readable format"""
         for key, value in self._data.items():
             print(f"{key}: {value}")
 
-    # change a setting (setter)
     def set(self, name: str, value: Any) -> None:
+        """Change a setting (setter)"""
         self._data[name] = value
     
-    # write _data to file (persist changes)
     def save(self) -> None:
+        """Write _data to file (persist changes)"""
         # The 'with' statement ensures proper resource cleanup. Open config file for writing.
         try:
             with open(CONFIG_PATH, "w", encoding="utf-8") as f:
@@ -63,8 +63,8 @@ class Settings:
         except (FileNotFoundError, json.JSONDecodeError, PermissionError, OSError) as e:
             logger.error("Failed to save settings from %s: %s", CONFIG_PATH, e)
 
-    # load from file to _data (discard changes or initial load from file to _data)
     def reload(self) -> None:
+        """Load from file to _data (discard changes or initial load from file to _data)"""
         try:
             # open file and load
             with open(CONFIG_PATH, "r", encoding="utf-8") as f:
@@ -80,13 +80,13 @@ class Settings:
         # load from file into _data
         self._data = loaded
     
-    # COMPLETE reset of settings
     def reset_all(self) -> None:
+        """COMPLETE reset of settings. To accept, save() is required"""
         self._data = self.DEFAULTS.copy() # _data now contains a copy of default settings
         logger.warning("Settings.json is COMPLETELY reset to default settings")
     
-    # reset a single setting
     def reset(self, name: str) -> None:
+        """reset a single setting"""
         # if setting does not exist, raise error about unknown setting
         if name in self.DEFAULTS:
             # set setting to default value

@@ -17,13 +17,14 @@ static_ffmpeg.add_paths()
 logger = logging.getLogger(__name__)
 
 class Downloader:
-    # constructor
     def __init__(self, settings: Settings, profile_manager: ProfileManager, proxy_rotator: ProxyRotator):
+        """Constructor"""
         self._settings = settings
         self._profile_manager = profile_manager
         self._proxy_rotator = proxy_rotator
 
     def download_profile(self, name: str):
+        """Download single profile"""
         # 1. проверить что профиль существует, если нет то ошибка
         if not self._profile_manager.profile_exists(name):
             logger.error("profile %s not found", name)
@@ -72,6 +73,7 @@ class Downloader:
                     time.sleep(1)
 
     def download_all(self):
+        """Download all profiles"""
         # сохранить список профилей
         profiles = self._profile_manager.list_profiles()
         # если профилей нет то warning и конец выполнения функции
@@ -87,9 +89,8 @@ class Downloader:
             except Exception as e:
                 logger.error("Failed to process profile \"%s\": %s", name, str(e))
 
-
-    # убедится что прокси не None (ОЧЕНЬ ВАЖНО)
     def _ensure_proxy(self, ytdlp_args: dict):
+        """Убедится что прокси не None (ОЧЕНЬ ВАЖНО)"""
         attempts = 0
         while ytdlp_args["proxy"] is None:
             attempts += 1

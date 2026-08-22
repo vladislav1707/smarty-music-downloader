@@ -10,8 +10,8 @@ logger = logging.getLogger(__name__)
 ROOT_DIR = Path(__file__).parent.parent # go up two levels
 
 class ProfileManager:
-    # class constructor for the profile manager
     def __init__(self, settings: Settings):
+        """Class constructor for the profile manager"""
         # store settings in a private field
         self._settings = settings
         # raw is the path to the profiles directory
@@ -31,8 +31,8 @@ class ProfileManager:
         else:
             self._profiles_dir = Path(raw)
 
-    # get list of download links for a specific profile
     def get_links(self, name: str) -> List[str]:
+        """Get list of download links for a specific profile"""
         # get the location of sources.txt inside the profile
         sources_file = self.profile_path(name) / "sources.txt"
         links = []
@@ -56,16 +56,16 @@ class ProfileManager:
             logger.error("Failed to open %s: %s", sources_file, e)
         return links
 
-    # get list of download links for all profiles
     def get_all_links(self) -> List[str]:
+        """Get list of download links for all profiles"""
         profile_list = self.list_profiles()
         list = []
         for i in profile_list:
             list.extend(self.get_links(i))
         return list
 
-    # return yt-dlp arguments as a dictionary
     def get_ytdlp_args(self, name: str) -> dict:
+        """Return yt-dlp arguments as a dictionary"""
         # get the location of ytdlp_args.json
         args_file = self.profile_path(name) / "ytdlp_args.json"
         # if the file does not exist, return an empty dict
@@ -80,8 +80,8 @@ class ProfileManager:
             logger.critical("Failed to open from %s: %s", args_file, e)
             raise SystemExit
 
-    # return a list of available profiles
     def list_profiles(self) -> List[str]:
+        """Return a list of available profiles"""
         # if the profiles directory does not exist or is not a directory, return empty list
         if not self._profiles_dir.exists() or not self._profiles_dir.is_dir():
             return []
@@ -90,12 +90,12 @@ class ProfileManager:
         logger.info("Found %d profiles", len(profiles))
         return profiles
 
-    # check whether a profile with the given name exists, returns bool
     def profile_exists(self, name: str) -> bool:
+        """Check whether a profile with the given name exists"""
         return self._profiles_dir.joinpath(name).exists()
 
-    # return the path to the profile, takes the profile name as input
     def profile_path(self, name: str) -> Path:
+        """Return the path to the profile, takes the profile name as input"""
         # append the profile name to _profiles_dir
         return self._profiles_dir / name
     
