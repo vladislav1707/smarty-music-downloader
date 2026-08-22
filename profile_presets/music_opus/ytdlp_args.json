@@ -1,16 +1,31 @@
 {
-    "socket_timeout": 30,
+    "socket_timeout": 60,
     "retries": 3,
-    "retry_sleep": 0,
+    "retry_sleep": 2,
     "fragment_retries": 1,
-    "no_check_certificate": true,
     "nocheckcertificate": true,
-    "no-check-certificate": true,
-    "ignore_errors": true,
-    "extract_audio": true,
-    "audio_format": "opus",
-    "audio_quality": 0,
-    "continue": true,
+    "ignoreerrors": true,
+    "extractaudio": true,
+    "audioformat": "opus",
+    "audioquality": 0,
+    "continuedl": true,
+    "addmetadata": true,
+    "embedthumbnail": true,
+    "writethumbnail": false,
     "outtmpl": "./downloaded_music/%(uploader)s/%(title)s.%(ext)s",
-    "download_archive": "./archive_music.txt"
+    "downloadarchive": "./archive_music.txt",
+    "user_agent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36",
+    "extractor_args": {
+        "youtube": {
+            "player_client": [
+                "android"
+            ],
+            "skip": [
+                "webpage"
+            ]
+        }
+    },
+    "sleep_interval": 5,
+    "max_sleep_interval": 10,
+    "sleep_requests": 1
 }

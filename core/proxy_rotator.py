@@ -8,6 +8,7 @@ import requests
 import socks
 import threading
 import queue
+from urllib.parse import urlparse
 # core
 from .proxy_manager import ProxyManager
 from .settings import Settings
@@ -118,6 +119,26 @@ class ProxyRotator:
     # проверить только 1 прокси на работоспособность
     def _validate(self, proxy: str) -> bool:
         try:
+            # если прокси socks5 или socks4
+            if proxy.startswith(('socks5://', 'socks4://')):
+                # распарсить на протокол, хост и порт
+                parsed = urlparse(proxy)
+                # если нет хоста или порта то прокси не рабочий
+                if not parsed.hostname or not parsed.port:
+                    return False
+                # записать тип прокси(SOCKS5 или SOCKS4)
+                proxy_type = socks.SOCKS5 if proxy.startswith('socks5://') else socks.SOCKS4
+                # Создаём SOCKS-сокет и пытаемся подключиться к YouTube
+                sock = socks.socksocket()
+                # установить прокси
+                sock.set_proxy(proxy_type, parsed.hostname, parsed.port)
+                # таймаут
+                sock.settimeout(5)
+                # попытка подключится
+                sock.connect(('www.youtube.com', 443))
+                # закрыть сокет
+                sock.close()
+                return True
             # HEAD-запрос с отключенной проверкой SSL
             response = requests.head(
                 "https://www.youtube.com/",             # тестовый URL

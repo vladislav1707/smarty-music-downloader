@@ -45,7 +45,14 @@ class Downloader:
                 try:
                     # попытка скачивания
                     with yt_dlp.YoutubeDL(ytdlp_args) as ydl:
-                        ydl.download([url])
+                        ret_code = ydl.download([url])
+                    if ret_code == 0:
+                        logger.info("Successfully downloaded \"%s\" after %d attempt(s)", url, attempt)
+                        success = True
+                    else:
+                        # yt-dlp завершился с ошибкой, но не выбросил исключение
+                        raise Exception(f"yt-dlp returned error code {ret_code}")
+                    
                     logger.info("Successfully downloaded \"%s\" after %d attempt(s)", url, attempt)
                     success = True
                 except Exception as e:
