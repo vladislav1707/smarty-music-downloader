@@ -1,14 +1,15 @@
 
 # TODO: перевести на английский комментарии
 
-from .profile_manager import ProfileManager
-from .settings import Settings
-from .proxy_rotator import ProxyRotator
 import yt_dlp
 import time
 import logging
 import shutil
-import ffmpeg_installer
+from static_ffmpeg import run
+# core
+from .profile_manager import ProfileManager
+from .settings import Settings
+from .proxy_rotator import ProxyRotator
 
 # create a logger with the same name as the file (downloader)
 logger = logging.getLogger(__name__)
@@ -105,23 +106,13 @@ class Downloader:
 
     # убедится что скачан ffmpeg, и если надо скачать
     def _ensure_ffmpeg(self):
-        ffmpeg_download_attempt = 0
-        # если уже сохранен путь
-        if hasattr(self, '_ffmpeg_path') and self._ffmpeg_path:
+        # если уже найден путь то ничего делать не надо
+        if self._ffmpeg_path:
             return
-        while self._ffmpeg_path is None:
-            ffmpeg_download_attempt += 1
-            # попытка найти в системе ffmpeg
-            system_ffmpeg = shutil.which('ffmpeg')
-            if system_ffmpeg:
-                self._ffmpeg_path = system_ffmpeg
-                logger.info(f"Using system ffmpeg: {system_ffmpeg}")
-                return
-
-            if ffmpeg_download_attempt >= 2:
-                logger.warning("ffmpeg is not installed, manual installation is required, otherwise audio conversion will not work")
-                return
-
-            # если нету то скачать и попробовать снова
-            ffmpeg_installer.install_ffmpeg()
-            logger.info("trying install ffmpeg...")
+        # попробовать скачать/найти ffmpeg
+        try:
+            self._ffmpeg_path = run.get_ffmpeg_path()
+            logger.info(f"FFmpeg ready: {self._ffmpeg_path}")
+        except ImportError:
+            logger.warning("static-ffmpeg not installed, please install it.")
+            self._ffmpeg_path = None
