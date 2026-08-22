@@ -2,7 +2,7 @@ from core.settings import Settings
 from core.profile_manager import ProfileManager
 from core.proxy_rotator import ProxyRotator
 from core.downloader import Downloader
-from typing import List, Dict, Union, Any
+from typing import List, Any
 import logging
 
 # Create a logger with the same name as the file (api)
