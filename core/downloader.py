@@ -4,12 +4,14 @@
 import yt_dlp
 import time
 import logging
-import shutil
-from static_ffmpeg import run
+import static_ffmpeg
 # core
 from .profile_manager import ProfileManager
 from .settings import Settings
 from .proxy_rotator import ProxyRotator
+
+# установить ffmpeg
+static_ffmpeg.add_paths()
 
 # create a logger with the same name as the file (downloader)
 logger = logging.getLogger(__name__)
@@ -20,10 +22,6 @@ class Downloader:
         self._settings = settings
         self._profile_manager = profile_manager
         self._proxy_rotator = proxy_rotator
-
-        # путь к ffmpeg
-        self._ffmpeg_path = None
-        self._ensure_ffmpeg()
 
     def download_profile(self, name: str):
         # 1. проверить что профиль существует, если нет то ошибка
@@ -37,10 +35,6 @@ class Downloader:
         if not links:
             logger.warning("Profile \"%s\" contains no links", name)
             return
-
-        # добавить в аргументы положение ffmpeg
-        if self._ffmpeg_path:
-            ytdlp_args['ffmpeg_location'] = self._ffmpeg_path
 
         ytdlp_args["proxy"] = self._proxy_rotator.get_proxy()
         self._ensure_proxy(ytdlp_args)
@@ -103,16 +97,3 @@ class Downloader:
             time.sleep(5)
             self._proxy_rotator.next_proxy()
             ytdlp_args["proxy"] = self._proxy_rotator.get_proxy()
-
-    # убедится что скачан ffmpeg, и если надо скачать
-    def _ensure_ffmpeg(self):
-        # если уже найден путь то ничего делать не надо
-        if self._ffmpeg_path:
-            return
-        # попробовать скачать/найти ffmpeg
-        try:
-            self._ffmpeg_path = run.get_ffmpeg_path()
-            logger.info(f"FFmpeg ready: {self._ffmpeg_path}")
-        except ImportError:
-            logger.warning("static-ffmpeg not installed, please install it.")
-            self._ffmpeg_path = None

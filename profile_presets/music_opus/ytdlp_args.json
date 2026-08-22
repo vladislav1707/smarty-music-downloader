@@ -7,6 +7,7 @@
     "ignoreerrors": true,
     "extractaudio": true,
     "audioformat": "opus",
+    "format": "bestaudio/best",
     "audioquality": 0,
     "continuedl": true,
     "addmetadata": true,
@@ -25,6 +26,13 @@
             ]
         }
     },
+    "postprocessors": [
+        {
+            "key": "FFmpegExtractAudio",
+            "preferredcodec": "opus",
+            "preferredquality": "0"
+        }
+    ],
     "sleep_interval": 5,
     "max_sleep_interval": 10,
     "sleep_requests": 1

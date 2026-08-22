@@ -21,7 +21,7 @@ class ProxyManager:
     def fetch_proxies(self) -> List[str]:
         try:
             # HTTP request to the page to retrieve proxies; one proxy per line
-            response = requests.get(self._url, timeout=10)
+            response = requests.get(self._url, timeout=20)
             # create a string containing the proxy text
             text_data = response.text
             # return the resulting list of proxies
