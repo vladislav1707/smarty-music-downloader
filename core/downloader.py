@@ -20,6 +20,10 @@ class Downloader:
         self._profile_manager = profile_manager
         self._proxy_rotator = proxy_rotator
 
+        # путь к ffmpeg
+        self._ffmpeg_path = None
+        self._ensure_ffmpeg()
+
     def download_profile(self, name: str):
         # 1. проверить что профиль существует, если нет то ошибка
         if not self._profile_manager.profile_exists(name):
@@ -33,8 +37,7 @@ class Downloader:
             logger.warning("Profile \"%s\" contains no links", name)
             return
 
-        # проверить что ffmpeg есть и скачать если нет, а так же добавить в аргументы
-        self._ensure_ffmpeg()
+        # добавить в аргументы положение ffmpeg
         if self._ffmpeg_path:
             ytdlp_args['ffmpeg_location'] = self._ffmpeg_path
 
@@ -59,8 +62,6 @@ class Downloader:
                     else:
                         # yt-dlp завершился с ошибкой, но не выбросил исключение
                         raise Exception(f"yt-dlp returned error code {ret_code}")
-                    
-                    success = True
                 except Exception as e:
                     logger.debug(
                         "Attempt %d failed for \"%s\": %s. Retrying with next proxy...",
@@ -104,27 +105,23 @@ class Downloader:
 
     # убедится что скачан ffmpeg, и если надо скачать
     def _ensure_ffmpeg(self):
+        ffmpeg_download_attempt = 0
         # если уже сохранен путь
         if hasattr(self, '_ffmpeg_path') and self._ffmpeg_path:
             return
-
-        # попытка найти в системе ffmpeg
-        system_ffmpeg = shutil.which('ffmpeg')
-        if system_ffmpeg:
-            self._ffmpeg_path = system_ffmpeg
-            logger.info(f"Using system ffmpeg: {system_ffmpeg}")
-            return
-
-        # если не найден то попытаться скачать через ffmpeg_installer
-        if ffmpeg_installer is not None:
-            try:
-                downloaded = ffmpeg_installer.ffmpeg_path
-                self._ffmpeg_path = downloaded
-                logger.info(f"ffmpeg not found in PATH, using downloaded version: {downloaded}")
+        while self._ffmpeg_path is None:
+            ffmpeg_download_attempt += 1
+            # попытка найти в системе ffmpeg
+            system_ffmpeg = shutil.which('ffmpeg')
+            if system_ffmpeg:
+                self._ffmpeg_path = system_ffmpeg
+                logger.info(f"Using system ffmpeg: {system_ffmpeg}")
                 return
-            except Exception as e:
-                logger.warning(f"could not install ffmpeg automatically: {e}")
-        else:
-            logger.warning("ffmpeg-installer not installed, please install ffmpeg manually.")
 
-        self._ffmpeg_path = None
+            if ffmpeg_download_attempt >= 2:
+                logger.warning("ffmpeg is not installed, manual installation is required, otherwise audio conversion will not work")
+                return
+
+            # если нету то скачать и попробовать снова
+            ffmpeg_installer.install_ffmpeg()
+            logger.info("trying install ffmpeg...")
