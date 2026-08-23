@@ -99,3 +99,9 @@ class ProfileManager:
         # append the profile name to _profiles_dir
         return self._profiles_dir / name
     
+    def get_total_links_count(self) -> int:
+        """Return total number of links across all profiles."""
+        total = 0
+        for profile in self.list_profiles():
+            total += len(self.get_links(profile))
+        return total

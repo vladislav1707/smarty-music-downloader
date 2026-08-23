@@ -42,6 +42,7 @@ def main():
     profile_parser.add_argument("--list", action="store_true", help="--list")                                       # list_profiles
     profile_parser.add_argument("--exists", metavar="NAME", help="--exists name")                                   # profile_exists
     profile_parser.add_argument("--path", metavar="NAME", help="--path name")                                       # profile_path
+    profile_parser.add_argument("--links_all", action="store_true", help="--links_all")                             # links_all
 
     # downloader subparser
     downloader_parser = subparsers.add_parser("download", help="--all, --profile name")
@@ -88,6 +89,8 @@ def main():
         elif args.path:
             name = args.path
             print(api.profile_path(name))
+        elif args.links_all:
+            print(api.get_total_links_count())
     elif args.command == "download":
         if args.all:
             api.download_all()

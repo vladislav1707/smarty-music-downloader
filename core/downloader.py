@@ -23,6 +23,9 @@ class Downloader:
         self._profile_manager = profile_manager
         self._proxy_rotator = proxy_rotator
 
+        # обработанные ссылки
+        self._downloaded_links = 0
+
     def download_profile(self, name: str):
         """Download single profile"""
         # 1. проверить что профиль существует, если нет то ошибка
@@ -71,6 +74,7 @@ class Downloader:
 
                     # пауза
                     time.sleep(1)
+            self._downloaded_links += 1
 
     def download_all(self):
         """Download all profiles"""
@@ -98,3 +102,6 @@ class Downloader:
             time.sleep(5)
             self._proxy_rotator.next_proxy()
             ytdlp_args["proxy"] = self._proxy_rotator.get_proxy()
+
+    def get_downloaded_links(self) -> int:
+        return self._downloaded_links

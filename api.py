@@ -60,6 +60,18 @@ class Api:
         """Return the path to the profile"""
         return str(self._profile_manager.profile_path(name))
 
+    def get_total_links_count(self) -> int:
+        """Return total links count"""
+        return self._profile_manager.get_total_links_count()
+
+    def get_downloaded_links(self) -> int:
+        """Return downloaded links count"""
+        return self._downloader.get_downloaded_links()
+
+    def get_profile_links(self, name: str):
+        """Get list of downloaded links for a specific profile"""
+        return self._profile_manager.get_links(name)
+
     # download operations
 
     def download_profile(self, name: str) -> None:
