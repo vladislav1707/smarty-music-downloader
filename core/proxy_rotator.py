@@ -20,12 +20,15 @@ class ProxyRotator:
         # настройки
         self._settings = settings
         self._refresh_interval = self._settings.get("proxy_refresh_interval")
+        self._cleanup_interval = self._settings.get("proxy_cleanup_interval")
         self._max_validation_threads = self._settings.get("max_validation_threads")
 
         # менеджер прокси
         self._proxy_manager = ProxyManager(self._settings)
         # последнее обновление списка прокси
         self._last_update = 0
+        # последняя очистка списка рабочих прокси
+        self._last_cleanup = 0
         # текущий выбранный прокси
         self.current_proxy = None
         # список прокси (не фильтрованных)
@@ -69,6 +72,7 @@ class ProxyRotator:
         while True:
             # обновить список прокси если надо
             self._update_proxy_list()
+            self._cleanup_working_proxy_list()
             # обновление очереди прокси
             with self.locker:   # чтобы воркеры не читали во время очистки
                 while not self._validation_queue.empty():
@@ -153,4 +157,10 @@ class ProxyRotator:
             logger.debug(f"Proxy {proxy} validation error: {e}")  
             # любая ошибка = прокси не работает
             return False
+
+    def _cleanup_working_proxy_list(self):
+        """Очистить список рабочих прокси если надо"""
+        with self.locker:
+            if self._cleanup_interval > 0 and (time.monotonic() - self._last_cleanup) >= self._cleanup_interval:
+                self.working_proxy_list = []
         
