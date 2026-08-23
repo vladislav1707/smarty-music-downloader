@@ -8,17 +8,13 @@ import logging
 # Create a logger with the same name as the file (api)
 logger = logging.getLogger(__name__)
 
-class SMDownloader:
+class Api:
     def __init__(self) -> None:
         """Constructor"""
         self._settings = Settings()
         self._profile_manager = ProfileManager(self._settings)
-        self._proxy_rotator = ProxyRotator(self._settings)
-        self._downloader = Downloader(
-            self._settings,
-            self._profile_manager,
-            self._proxy_rotator
-        )
+        self._proxy_rotator = None
+        self._downloader = None
 
     # settings management
 
@@ -68,8 +64,20 @@ class SMDownloader:
 
     def download_profile(self, name: str) -> None:
         """Download single profile"""
+        self._start()
         self._downloader.download_profile(name)
 
     def download_all(self) -> None:
         """Download all profiles"""
+        self._start()
         self._downloader.download_all()
+
+    def _start(self):
+        """Create an instance of ProxyRotator and Downloader"""
+        if self._proxy_rotator is None and self._downloader is None:
+            self._proxy_rotator = ProxyRotator(self._settings)
+            self._downloader = Downloader(
+                        self._settings,
+                        self._profile_manager,
+                        self._proxy_rotator
+                    )

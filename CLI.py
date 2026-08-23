@@ -1,11 +1,8 @@
 import argparse
 import logging
 import sys
-# import modules from core
-from core.settings import Settings
-from core.profile_manager import ProfileManager
-from core.proxy_rotator import ProxyRotator
-from core.downloader import Downloader
+# api
+from api import Api
 # version
 from version import __version__
 
@@ -45,8 +42,6 @@ def main():
     profile_parser.add_argument("--list", action="store_true", help="--list")                                       # list_profiles
     profile_parser.add_argument("--exists", metavar="NAME", help="--exists name")                                   # profile_exists
     profile_parser.add_argument("--path", metavar="NAME", help="--path name")                                       # profile_path
-    profile_parser.add_argument("--links", metavar="NAME", help="--links name")                                     # links
-    profile_parser.add_argument("--links_all", action="store_true", help="--links_all")                             # links_all
 
     # downloader subparser
     downloader_parser = subparsers.add_parser("download", help="--all, --profile name")
@@ -57,62 +52,48 @@ def main():
     # args
     args = parser.parse_args()
 
-    # instance of the Settings class
-    settings = Settings()
-
-    # instance of the ProfileManager class
-    profile_manager = ProfileManager(settings)
+    # api
+    api = Api()
 
     if args.command == "settings":
         if args.set:
             name, value = args.set
-            settings.set(name, value)
-            settings.save()
+            api.set_setting(name, value)
+            api.save_settings()
             print(f"set: {name} = {value}")
         elif args.get:
             name = args.get
-            print(f"get: {name} = {settings.get(name)}")
+            print(f"get: {name} = {api.get_setting(name)}")
         elif args.show_all:
-            settings.show_all()
+            api.show_all_settings()
         elif args.reset:
             name = args.reset
-            settings.reset(name)
-            settings.save()
-            print(f"reset: {name} = {settings.get(name)}")
+            api.reset_setting(name)
+            api.save_settings()
+            print(f"reset: {name} = {api.get_setting(name)}")
         elif args.reset_all:
             confirm = input("Are you sure? (y/n): ")
             if confirm.lower() == 'y':
-                settings.reset_all()
-                settings.save()
+                api.reset_all_settings()
+                api.save_settings()
                 print("All settings have been reset to default.")
             else:
                 print("Reset cancelled")
     elif args.command == "profile":
         if args.list:
-            print(profile_manager.list_profiles())
+            print(api.list_profiles())
         elif args.exists:
             name = args.exists
-            print(profile_manager.profile_exists(name))
+            print(api.profile_exists(name))
         elif args.path:
             name = args.path
-            print(profile_manager.profile_path(name))
-        elif args.links:
-            name = args.links
-            print(len(profile_manager.get_links(name)))
-        elif args.links_all:
-            print(len(profile_manager.get_all_links()))
+            print(api.profile_path(name))
     elif args.command == "download":
-        # instance of the ProxyRotator class
-        proxy_rotator = ProxyRotator(settings)
-
-        # instance of the Downloader class
-        downloader = Downloader(settings, profile_manager, proxy_rotator)
-        
         if args.all:
-            downloader.download_all()
+            api.download_all()
         elif args.profile:
             name = args.profile
-            downloader.download_profile(name)
+            api.download_profile(name)
     else:
         print(f"not found: {args.command}, try --help")
 
