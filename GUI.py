@@ -220,12 +220,11 @@ def main():
         fg="#33ff33",
         activebackground="#2a2a2a",
         activeforeground="#33ff33",
-        relief="solid",
+        relief="flat",
         padx=20,
         pady=8,
         font=("Courier New", 10),
-        cursor="hand2",
-        command=start_download
+        cursor="hand2"
     )
     DOWNLOAD_ALL_btn.pack(side="bottom", pady=10)
     ToolTip(DOWNLOAD_ALL_btn, "hamburger", delay=9999.9)
@@ -322,6 +321,9 @@ def main():
         
         # через 100 милисекунд запланировать проверку статуса загрузки
         root.after(100, check_download_status)
+
+    # кнопка DOWNLOAD_ALL_btn запускает функцию start_download
+    DOWNLOAD_ALL_btn.config(command=start_download)
 
     root.mainloop()
 
