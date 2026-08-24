@@ -37,6 +37,10 @@ logger.addHandler(console_handler)
 download_thread = None
 is_downloading = False
 
+# спиннер
+spinner_chars = ['|', '/', '-', '\\']
+spinner_idx = 0
+
 def main():
     # главное окно, его название, размеры, ограничение на минимальный размер, цвет и т.д.
     root = tk.Tk()
@@ -47,7 +51,7 @@ def main():
 
     # стилизация
     style = ttk.Style()
-    style.theme_use("alt")
+    style.theme_use("clam")
 
     # кастомный scrollbar
     style.configure("Custom.Vertical.TScrollbar",
@@ -67,7 +71,7 @@ def main():
     style.configure("Custom.Horizontal.TProgressbar",
         background="#33ff33",
         troughcolor="#1a1a1a",
-        bordercolor="#33ff33",
+        bordercolor="white",
         lightcolor="#33ff33",
         darkcolor="#33ff33",
         relief="flat"
@@ -96,7 +100,7 @@ def main():
     # спиннер и прогресс скачивания (сколько скачано и сколько осталось)
     progress_label = tk.Label(
         progress_frame,
-        text=f"[/] 0 / {api.get_total_links_count()} (0%)",
+        text=f"[Waiting for action] 0 / {api.get_total_links_count()} (0%)",
         fg="#33ff33",
         bg="#0c0c0c",
         font=("Courier New", 10),
@@ -216,12 +220,12 @@ def main():
         fg="#33ff33",
         activebackground="#2a2a2a",
         activeforeground="#33ff33",
-        relief="flat",
+        relief="solid",
         padx=20,
         pady=8,
         font=("Courier New", 10),
         cursor="hand2",
-        command=lambda: print("Скачивание... (заглушка)")
+        command=start_download
     )
     DOWNLOAD_ALL_btn.pack(side="bottom", pady=10)
     ToolTip(DOWNLOAD_ALL_btn, "hamburger", delay=9999.9)
@@ -263,7 +267,7 @@ def main():
     # функция проверки статуса скачивания(активно или нет)
     def check_download_status():
         # указать что переменные глобальные
-        global download_thread, is_downloading
+        global download_thread, is_downloading, spinner_idx, spinner_chars
 
         # если не скачивание то выйти
         if not is_downloading:
@@ -271,7 +275,7 @@ def main():
         
         # если поток не рабочий то разблокировать кнопку
         if not download_thread.is_alive():
-            DOWNLOAD_ALL_btn.config(state=tk.NORMAL, text="▶ DOWNLOAD ALL")
+            DOWNLOAD_ALL_btn.config(state=tk.NORMAL, text="▶ DOWNLOAD ALL", cursor="hand2",)
             is_downloading = False
             progress_label.config(text="[✓] The download is complete")
             progressbar.config(value=100)
@@ -284,8 +288,12 @@ def main():
             total = api.get_total_links_count()
             # если всех ссылок больше нуля то вычислить сколько процентов ссылок скачано и вывести прогресс
             if total > 0:
+                # спиннер
+                spinner_char = spinner_chars[spinner_idx % len(spinner_chars)]
+                spinner_idx += 1
+                # расчитать проценты
                 percent = int((downloaded / total) * 100)
-                progress_label.config(text=f"[*] {downloaded} / {total} ({percent}%)")
+                progress_label.config(text=f"[{spinner_char}] {downloaded} / {total} ({percent}%)")
                 progressbar.config(value=percent)
             # иначе вывести неизвестно сколько процентов
             else:
@@ -303,7 +311,7 @@ def main():
         global download_thread, is_downloading
 
         # отключить кнопку а так же обнулить прогрессбар
-        DOWNLOAD_ALL_btn.config(state=tk.DISABLED, text="DOWNLOADING...")
+        DOWNLOAD_ALL_btn.config(state=tk.DISABLED, text="DOWNLOADING...", cursor="arrow")
         progressbar.config(value=0)
         
         # запустить поток для скачивания (daemon нужен чтобы при закрытии программы поток тоже закрылся)
@@ -314,9 +322,6 @@ def main():
         
         # через 100 милисекунд запланировать проверку статуса загрузки
         root.after(100, check_download_status)
-
-    # при нажатии на DOWNLOAD_ALL_btn будет вызываться функция start_download
-    DOWNLOAD_ALL_btn.config(command=start_download)
 
     root.mainloop()
 
