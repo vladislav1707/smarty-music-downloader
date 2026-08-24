@@ -8,15 +8,18 @@
     "continuedl": true,
     "addmetadata": true,
     "embedthumbnail": true,
-    "writethumbnail": true,
     "format": "bestvideo[height<=1080][ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best",
     "outtmpl": "./downloads/%(uploader)s/%(title)s.%(ext)s",
     "downloadarchive": "./archive_video.txt",
     "user_agent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36",
     "extractor_args": {
         "youtube": {
-            "player_client": ["android"],
-            "skip": ["webpage"]
+            "player_client": [
+                "android"
+            ],
+            "skip": [
+                "webpage"
+            ]
         }
     },
     "sleep_interval": 5,
