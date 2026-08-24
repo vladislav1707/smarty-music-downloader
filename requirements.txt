@@ -1,3 +1,4 @@
 yt-dlp>=2023.0.0
 PySocks>=1.7.0
+tkinter-tooltip>=0.3.0
 static-ffmpeg

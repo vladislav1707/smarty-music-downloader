@@ -72,6 +72,10 @@ class Api:
         """Get list of downloaded links for a specific profile"""
         return self._profile_manager.get_links(name)
 
+    def read_sources_from_profile(self, name:str) -> str:
+        """Read source.txt from profile"""
+        return self._profile_manager.read_sources_from_profile(name)
+
     # download operations
 
     def download_profile(self, name: str) -> None:

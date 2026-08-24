@@ -64,6 +64,24 @@ class ProfileManager:
             list.extend(self.get_links(i))
         return list
 
+    def read_sources_from_profile(self, name) -> str:
+        """Read source.txt from profile"""
+        # get the location of sources.txt inside the profile
+        sources_file = self.profile_path(name) / "sources.txt"
+
+        # if sources.txt does not exist, return an empty list
+        if not sources_file.exists():
+            logger.warning("No links in \"%s\" profile", name)
+            return ""
+
+        try:
+            # open sources_file in read mode ("r") with utf-8 encoding
+            with open(sources_file, "r", encoding="utf-8-sig") as f:
+                # for each line in the file
+                return f.read()
+        except (PermissionError, OSError, UnicodeDecodeError) as e:
+            logger.error("Failed to open %s: %s", sources_file, e)
+
     def get_ytdlp_args(self, name: str) -> dict:
         """Return yt-dlp arguments as a dictionary"""
         # get the location of ytdlp_args.json
