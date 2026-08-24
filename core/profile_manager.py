@@ -63,7 +63,7 @@ class ProfileManager:
         for i in profile_list:
             list.extend(self.get_links(i))
         return list
-
+    
     def read_sources_from_profile(self, name) -> str:
         """Read source.txt from profile"""
         # get the location of sources.txt inside the profile
@@ -71,9 +71,8 @@ class ProfileManager:
 
         # if sources.txt does not exist, return an empty list
         if not sources_file.exists():
-            logger.warning("No links in \"%s\" profile", name)
             return ""
-
+         
         try:
             # open sources_file in read mode ("r") with utf-8 encoding
             with open(sources_file, "r", encoding="utf-8-sig") as f:
@@ -105,7 +104,6 @@ class ProfileManager:
             return []
         # otherwise, return the names of all subdirectories in the profiles directory
         profiles = [item.name for item in self._profiles_dir.iterdir() if item.is_dir()]
-        logger.info("Found %d profiles", len(profiles))
         return profiles
 
     def profile_exists(self, name: str) -> bool:

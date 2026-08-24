@@ -296,7 +296,7 @@ def main():
                 progressbar.config(value=percent)
             # иначе вывести неизвестно сколько процентов
             else:
-                progress_label.config(text=f"[*] {downloaded} / ?")
+                progress_label.config(text=f"[?] {downloaded} / ?")
         # обработка ошибок
         except Exception as e:
             progress_label.config(text=f"Update error: {e}")
@@ -308,7 +308,7 @@ def main():
     def start_download():
         # указать что переменные глобальные
         global download_thread, is_downloading
-
+ 
         # отключить кнопку а так же обнулить прогрессбар
         DOWNLOAD_ALL_btn.config(state=tk.DISABLED, text="DOWNLOADING...", cursor="arrow")
         progressbar.config(value=0)
