@@ -45,7 +45,7 @@ def main():
     # главное окно, его название, размеры, ограничение на минимальный размер, цвет и т.д.
     root = tk.Tk()
     root.title("Smarty Music Downloader")
-    root.geometry("870x600")
+    root.geometry("870x600+100+50")
     root.configure(bg="#0c0c0c")
     root.minsize(width=870, height=600)
 
@@ -299,7 +299,7 @@ def main():
                 progress_label.config(text=f"[?] {downloaded} / ?")
         # обработка ошибок
         except Exception as e:
-            progress_label.config(text=f"Update error: {e}")
+            logger.debug("Update error: %s", e)
         
         # через 500 милисекунд запланировать проверку статуса загрузки
         root.after(500, check_download_status)
