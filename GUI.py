@@ -103,7 +103,7 @@ def main():
     ToolTip(title, "Made by Mister Smarty Pants")
 
     # открыть окно логов
-    def open_log_window():
+    def open_log_window() -> None:
         # указать что log_win глобальная переменная
         global log_win
 
@@ -142,24 +142,21 @@ def main():
         log_win.grid_rowconfigure(0, weight=1)
         text_logs.config(yscrollcommand=logs_scrollbar.set)
 
-        #! инициализация позиции чтения
-        #log_win.last_pos = 0
-
         # прочесть лог и запустить автообновление
         update_log_text(text_logs, log_win)
 
     # обновить текст логов
-    def update_log_text(text: tk.Text, log_win: tk.Toplevel):
-        # сохранить текущее положение чтобы не потерять его
-        scroll_pos = text.yview()
+    def update_log_text(text: tk.Text, log_win: tk.Toplevel) -> None:
+        # сохранить индекс верхней видимой строки
+        scroll_index = text.index("@0,0")
+
         # самый ли низ (для прилипания "камеры" к низу логов)
-        at_bottom = scroll_pos[1] >= 0.999
+        at_bottom = text.yview()[1] >= 0.999
         
         # вывод логов
         try:
             # снять блокироку
             text.config(state=tk.NORMAL)
-
             # очистка
             text.delete(1.0, tk.END)
             with open("smarty_music_downloader.log", "r", encoding="utf-8") as f:
@@ -170,7 +167,7 @@ def main():
 
         # вернуть положение которое было до обновления (с прилипанием к низу логов)
         if not at_bottom:
-            text.yview_moveto(scroll_pos[0])
+            text.yview(scroll_index)
         else:
             # оставаться внизу даже если логи увеличиваются
             text.see(tk.END)
