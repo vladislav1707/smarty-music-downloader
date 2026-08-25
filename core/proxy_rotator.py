@@ -96,11 +96,11 @@ class ProxyRotator:
             except queue.Empty:
                 continue
             # валидация
-            logger.info("proxy validation: %s", proxy)
+            logger.info("Proxy validation: %s", proxy)
             if self._validate(proxy):
                 with self.locker:
                     self.working_proxy_list.append(proxy)
-                logger.info("proxy validation was successful: %s", proxy)
+                logger.info("Proxy validation was successful: %s", proxy)
             self._validation_queue.task_done()
 
     def _update_proxy_list(self):

@@ -81,6 +81,8 @@ class Downloader:
 
     def download_all(self):
         """Download all profiles"""
+        # сбросить счетчик ссылок перед скачиванием
+        self._downloaded_links = 0
         # сохранить список профилей
         profiles = self._profile_manager.list_profiles()
         # если профилей нет то warning и конец выполнения функции
