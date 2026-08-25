@@ -9,6 +9,9 @@
 #               добавить метод для получения всего sources.txt с комментариями
 # нижний фрейм: кнопка "скачать всё"
 
+# TODO: 1. исправить проблему с тем что после скачивания при нажатии на кнопку прогрессбар багуется(отображается что есть прогресс)
+# TODO: 2. исправить сохранение позиции в логах
+
 import version
 import threading
 import logging
@@ -25,13 +28,16 @@ api = Api()
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
 file_handler = logging.FileHandler('smarty_music_downloader.log', mode='w', encoding='utf-8')
-file_handler.setLevel(logging.INFO)
+file_handler.setLevel(logging.DEBUG)
 file_handler.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
 console_handler = logging.StreamHandler(sys.stdout)
-console_handler.setLevel(logging.INFO)
+console_handler.setLevel(logging.DEBUG)
 console_handler.setFormatter(logging.Formatter('%(message)s'))
 logger.addHandler(file_handler)
 logger.addHandler(console_handler)
+
+# сделать 1 вывод в логи чтобы было понятно что кнопка рабочая и не бутафорская
+logger.info(f"Smarty Music Downloader started. Version: {version.__version__}")
 
 # управление блокировкой кнопки
 download_thread = None
@@ -41,13 +47,16 @@ is_downloading = False
 spinner_chars = ['|', '/', '-', '\\']
 spinner_idx = 0
 
+# окно логов
+log_win = None
+
 def main():
     # главное окно, его название, размеры, ограничение на минимальный размер, цвет и т.д.
     root = tk.Tk()
     root.title("Smarty Music Downloader")
-    root.geometry("870x600+100+50")
+    root.geometry("870x650+100+25")
     root.configure(bg="#0c0c0c")
-    root.minsize(width=870, height=600)
+    root.minsize(width=870, height=650)
 
     # стилизация
     style = ttk.Style()
@@ -92,6 +101,102 @@ def main():
     )
     title.pack(side="left", padx=5, pady=5)
     ToolTip(title, "Made by Mister Smarty Pants")
+
+    # открыть окно логов
+    def open_log_window():
+        # указать что log_win глобальная переменная
+        global log_win
+
+        # если окна нет и оно не закрыто то:
+        if log_win is not None and log_win.winfo_exists():
+            log_win.lift()
+            return
+        
+        # создать и настроить окно
+        log_win = tk.Toplevel(root)
+        log_win.title("Logs")
+        log_win.geometry("800x400")
+        log_win.configure(bg="#0c0c0c")
+
+        # создать текст в окне
+        text_logs = tk.Text(
+            log_win,
+            bg="#0c0c0c",
+            fg="#ffffff", 
+            state="disabled",
+            font=("Courier New", 10)
+            )
+        text_logs.grid(row=0, column=0, sticky="nsew")
+
+        # скроллбар для текстового поля
+        logs_scrollbar = ttk.Scrollbar(
+            log_win,
+            orient=tk.VERTICAL,
+            style="Custom.Vertical.TScrollbar",
+            command=text_logs.yview
+        )
+        logs_scrollbar.grid(row=0, column=1, sticky="ns")
+
+        # настройка весов - текстовая колонка растягивается, скроллбар остаётся фиксированным
+        log_win.grid_columnconfigure(0, weight=1)
+        log_win.grid_rowconfigure(0, weight=1)
+        text_logs.config(yscrollcommand=logs_scrollbar.set)
+
+        #! инициализация позиции чтения
+        #log_win.last_pos = 0
+
+        # прочесть лог и запустить автообновление
+        update_log_text(text_logs, log_win)
+
+    # обновить текст логов
+    def update_log_text(text: tk.Text, log_win: tk.Toplevel):
+        # сохранить текущее положение чтобы не потерять его
+        scroll_pos = text.yview()
+        # самый ли низ (для прилипания "камеры" к низу логов)
+        at_bottom = scroll_pos[1] >= 0.999
+        
+        # вывод логов
+        try:
+            # снять блокироку
+            text.config(state=tk.NORMAL)
+
+            # очистка
+            text.delete(1.0, tk.END)
+            with open("smarty_music_downloader.log", "r", encoding="utf-8") as f:
+                for line in f:
+                    text.insert(tk.END, line)
+        except FileNotFoundError:
+            logger.error("log file not found")
+
+        # вернуть положение которое было до обновления (с прилипанием к низу логов)
+        if not at_bottom:
+            text.yview_moveto(scroll_pos[0])
+        else:
+            # оставаться внизу даже если логи увеличиваются
+            text.see(tk.END)
+
+        # вернуть блокироку
+        text.config(state=tk.DISABLED)
+
+        # запланировать обновление логов
+        log_win.after(500, update_log_text, text, log_win)
+
+    # кнопка логов
+    logs_btn = tk.Button(
+        top_frame,
+        text="logs",
+        bg="#1a1a1a",
+        fg="#33ff33",
+        activebackground="#2a2a2a",
+        activeforeground="#33ff33",
+        relief="flat",
+        padx=5,
+        pady=5,
+        font=("Courier New", 10),
+        cursor="hand2",
+        command=open_log_window
+    )
+    logs_btn.pack(side="right", pady=5, padx=10)
 
     # фрейм прогресса (фиксированная высота)
     progress_frame = tk.Frame(root, bg="#0c0c0c", height=40)
@@ -301,8 +406,8 @@ def main():
         except Exception as e:
             logger.debug("Update error: %s", e)
         
-        # через 500 милисекунд запланировать проверку статуса загрузки
-        root.after(500, check_download_status)
+        # через 250 милисекунд запланировать проверку статуса загрузки (ВЛИЯЕТ НА СКОРОСТЬ СПИННЕРА)
+        root.after(250, check_download_status)
 
     # запуск скачивания всех профилей
     def start_download():
@@ -312,6 +417,7 @@ def main():
         # отключить кнопку а так же обнулить прогрессбар
         DOWNLOAD_ALL_btn.config(state=tk.DISABLED, text="DOWNLOADING...", cursor="arrow")
         progressbar.config(value=0)
+        progress_label.config(text="[Initializing...] 0 / 0 (0%)")
         
         # запустить поток для скачивания (daemon нужен чтобы при закрытии программы поток тоже закрылся)
         download_thread = threading.Thread(target=api.download_all, daemon=True)

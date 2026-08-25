@@ -12,11 +12,11 @@ def main():
     logger.setLevel(logging.DEBUG)
 
     file_handler = logging.FileHandler('smarty_music_downloader.log', mode='w', encoding='utf-8')
-    file_handler.setLevel(logging.INFO)
+    file_handler.setLevel(logging.DEBUG)
     file_handler.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
 
     console_handler = logging.StreamHandler(sys.stdout)
-    console_handler.setLevel(logging.INFO)
+    console_handler.setLevel(logging.DEBUG)
     console_handler.setFormatter(logging.Formatter('%(message)s'))
 
     logger.addHandler(file_handler)

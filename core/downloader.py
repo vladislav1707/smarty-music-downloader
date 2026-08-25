@@ -39,9 +39,12 @@ class Downloader:
         if not links:
             logger.warning("Profile \"%s\" contains no links", name)
             return
-
+        
+        # передать прокси
         ytdlp_args["proxy"] = self._proxy_rotator.get_proxy()
+        # убедится что прокси не None
         self._ensure_proxy(ytdlp_args)
+
         # 3. для каждой ссылки в профиле скачать с помощью yt-dlp и подставить аргументы из профиля
         for url in links:
             success = False
