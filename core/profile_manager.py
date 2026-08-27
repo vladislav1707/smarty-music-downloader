@@ -1,7 +1,7 @@
 from .settings import Settings
 import json
 import logging
-from path_utils import get_root_dir
+from core.path_utils import get_root_dir
 from pathlib import Path
 from typing import List
 
