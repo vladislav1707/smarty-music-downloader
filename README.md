@@ -1,67 +1,171 @@
-# Оглавление
-- [Оглавление](#оглавление)
-- [Что это и зачем оно надо](#что-это-и-зачем-оно-надо)
-- [Установка](#установка)
-- [Быстрый старт](#быстрый-старт)
-  - [скачивание](#скачивание)
-- [Важно (чтобы не получить бан от ютуба)](#важно-чтобы-не-получить-бан-от-ютуба)
-- [Настройки](#настройки)
-- [Система профилей](#система-профилей)
-  - [что такое профиль](#что-такое-профиль)
-  - [как создать профиль](#как-создать-профиль)
-- [ограничения GUI](#ограничения-gui)
+Attention: the translation into English was made by AI, the original version in [Russian](README.ru.md)
 
-# Что это и зачем оно надо
+# Table of Contents
+- [Table of Contents](#table-of-contents)
+- [What is this and why do you need it?](#what-is-this-and-why-do-you-need-it)
+- [Installation](#installation)
+  - [Windows](#windows)
+  - [Linux](#linux)
+  - [Mac OS](#mac-os)
+- [Quick Start](#quick-start)
+  - [Downloading](#downloading)
+- [Important (to avoid getting banned by YouTube)](#important-to-avoid-getting-banned-by-youtube)
+- [Settings](#settings)
+  - [Where to change settings](#where-to-change-settings)
+  - [Available settings](#available-settings)
+  - [Profile System](#profile-system)
+  - [What is a profile?](#what-is-a-profile)
+  - [How to create a profile](#how-to-create-a-profile)
+- [CLI Commands](#cli-commands)
+  - [Miscellaneous](#miscellaneous)
+  - [Settings](#settings-1)
+  - [Profiles](#profiles)
+  - [Downloading](#downloading-1)
+- [GUI Limitations](#gui-limitations)
+- [Credits](#credits)
+- [Frequently Asked Questions (FAQ)](#frequently-asked-questions-faq)
+  - [How do I add download links?](#how-do-i-add-download-links)
+  - [GUI sucks, where are the settings?](#gui-sucks-where-are-the-settings)
+  - [Why do I need another interface for yt-dlp?](#why-do-i-need-another-interface-for-yt-dlp)
+  - [Slow download speed](#slow-download-speed)
 
-проект использует [лицензию MIT](LICENSE)
+# What is this and why do you need it?
 
-**Краткое описание:** эта программа нужна чтобы 
-массово скачивать музыку/видео с ютуба с помощью yt-dlp, программа абсолютно бесплатная и с открытым исходным кодом. Тут есть уникальная система профилей и ротация прокси. **Несмотря на название программы поддерживается скачивание видео**
+The project uses the [MIT License](LICENSE).
 
-**фичи:**
-* встроенная проверка прокси (ОЧЕНЬ БЫСТРАЯ)
+**Brief description:**  
+This program is designed to mass‑download music/video from YouTube using `yt-dlp`. It is completely free and open source. It features a unique **profile system** and **proxy rotation**. **Despite the name, video downloading is also supported.**
 
-* при каждой ошибке прокси меняется (обходит временные баны по IP от ютуба)
+**Important:** this program makes sense for long‑term use. If you have only a few files, it will slow you down, **BUT** if you have huge playlists and many links, it will help a lot because it bypasses temporary IP bans and error 429.
 
-* есть система профилей (разные ссылки с разными аргументами)
+**Features:**
+* Built‑in proxy validation (VERY FAST).
 
-* есть рабочий GUI (можно смотреть профили и ссылки в них (только смотреть, создавать папки и файлы придется вручную))
+* Proxies are rotated on each error (bypasses temporary IP bans from YouTube).
 
-* можно настроить сортировку по папкам (в профиле)
+* Profile system (different links with different arguments).
 
-* этот проект опенсорсный и ПОЛНОСТЬЮ БЕСПЛАТНЫЙ
+* A working GUI (RAW).
 
-* Если вам что то не нравится или не хватает вы можете добавить это сами. Например покрасить все в розовый поменяв код или добавить новые кнопки. Из простого можно сменить тему с clam на alt
+* You can configure folder‑based sorting (per profile).
 
-* если видео удалят и оно у вас скачано то оно никуда не исчезнет
+* This project is open source and COMPLETELY FREE.
 
-* есть несколько готовых к использованию пресетов профилей
+* If you don't like something or find something missing, you can add it yourself. For example, paint everything pink by modifying the code, or add new buttons. A simple change – switch the theme from `clam` to `alt`.
 
-* поддерживается скачивание как музыки так и видео
+* If a video is deleted after you've downloaded it, it won't disappear from your library.
 
-# Установка
-{не забыть вставить тут ссылки для установки и описание когда все будет готово, как вариант даже видос снять с гайдом каким никаким и на ютуб выложить}
-# Быстрый старт
-Сразу после установки я настоятельно настроить программу под себя, в частности сделать свои профили на основе пресетов, либо переименовать и переместить папку с пресетами и указать в настройках глобальный путь
+* Several ready‑to‑use profile presets are included.
 
-## скачивание
-если вы используете GUI то чтобы скачать ссылки из всех профилей с указанными в профилях аргументами вам потребуется нажать большую кнопку DOWNLOAD ALL (скачать все)
+* Both audio and video downloads are supported.
 
-# Важно (чтобы не получить бан от ютуба)
-**пожалуйста!** не добавляйте свои куки в аргументы(ytdlp_args.json), иначе вас могут забанить на ютубе!
+# Installation
 
-# Настройки
-В настройках можно менять некоторые штуки вроде profiles_dir, кол-во потоков на скачивание и подобных, если вы ищете где изменить настройки ytdlp или добавить ссылки для скачивания ищите в [описании системы профилей](#Система-профилей)
-# Система профилей
-Все профили **ОБЯЗАТЕЛЬНО** должны быть в 1 директории(папке), иначе программа их просто не увидит. Указать ее можно в настройках(настройка называется profiles_dir, если указать "profile_presets" тогда программа будет видеть профили в папке с пресетами, это значение по умолчанию)
-## что такое профиль
-профили содержат ссылки и аргументы, ссылки профиля будут скачаны с аргументами профиля, аргументы других профилей не распространяются на этот профиль и наоборот
-## как создать профиль
-вы можете создать профиль к примеру из пресета, просто коопируйте его к себе в директорию профилей, назовите как хотите, запишите в sources.txt свои ссылки(и комментарии к ним по желанию) а так же если посчитаете нужным поменяйте аргументы в ytdlp_args.json
-# ограничения GUI
-**GUI не умеет в данный момент:**
-* создавать и редактировать профили(только просмотр)
+## Windows
+Just download the latest archive from the Releases page and extract it anywhere you like. Inside you'll find two executable files: GUI and CLI. **The CLI version is more complete, and I recommend using that one.**
 
-* редактировать настройки (есть в CLI)
+## Linux
+1. Make sure Python 3.8 or higher is installed.
+2. Download the source code, navigate to the folder containing `CLI.py` and `GUI.py`.
+3. Run with `python` or `python3`:
+   * `python CLI.py --help` – shows the list of CLI commands.
+   * `python GUI.py` – launches the GUI version.
+4. If you want to run it quickly, you can add an alias or come up with something else.
 
-* обрабатывать только 1 профиль за раз(есть в CLI)
+> If you'd like to extend these instructions, feel free to contact me.
+
+## Mac OS
+The process is the same as for Linux, but if something doesn't work, try installing FFmpeg via Homebrew:
+```brew install ffmpeg```
+
+# Quick Start
+
+Right after installation, I strongly recommend configuring the program to your needs: create your own profiles based on the presets, or rename and move the presets folder and set a global path in the settings.
+
+## Downloading
+If you use the GUI, to download links from all profiles with their respective arguments, you'll need to press the big **DOWNLOAD ALL** button.
+
+# Important (to avoid getting banned by YouTube)
+
+**Please!** Do not add your own cookies to the arguments (`ytdlp_args.json`), otherwise you might get banned on YouTube!
+
+# Settings
+
+In the settings you can change things like `profiles_dir`, number of threads for downloading, and similar. If you're looking for where to change `yt-dlp` options or add download links, see the [Profile System](#profile-system) section.
+
+## Where to change settings
+Either via CLI, or manually in the `data/settings.json` file.
+
+## Available settings
+* `proxy_url` – link to a raw proxy list (default uses SOCKS5 proxies from proxifly).
+* `profiles_dir` – the directory where profiles are searched.
+* `proxy_refresh_interval` – how often the proxy list is downloaded from the internet (default every 5 minutes and 5 seconds).
+* `proxy_cleanup_interval` – how often the working proxy list is cleaned up (needed due to very fast validation; set to `0` to disable cleanup).
+* `max_validation_threads` – number of threads used for proxy validation (recommended not to change).
+
+## Profile System
+
+All profiles **MUST** be in a single directory (folder), otherwise the program won't see them. You can specify that directory in the settings (parameter `profiles_dir`). If you set it to `"profile_presets"`, the program will use the bundled presets folder – this is the default.
+
+## What is a profile?
+Profiles contain links and arguments. Links from a profile are downloaded with that profile's arguments. Arguments from other profiles do not apply to this profile and vice versa.
+
+## How to create a profile
+You can create a profile, for example, from a preset: simply copy it to your profiles directory, rename it as you like, write your links into `sources.txt` (and optional comments), and if you think it's necessary, change the arguments in `ytdlp_args.json`.
+
+# CLI Commands
+
+**Note:** examples are for Windows. If you're on Linux, just replace `SMDownloader_CLI.exe` with `python CLI.py` or your alias – everything will work the same.
+
+> To see the full list of all commands, run `SMDownloader_CLI.exe --help`.
+
+## Miscellaneous
+* `SMDownloader_CLI.exe --help` – show command list.
+* `SMDownloader_CLI.exe --version` – show version.
+
+## Settings
+* `SMDownloader_CLI.exe settings --show_all` – show all settings.
+* `SMDownloader_CLI.exe settings --set "parameter" "value"` – change a setting.
+* `SMDownloader_CLI.exe settings --get "parameter"` – display the value of a parameter.
+
+## Profiles
+* `SMDownloader_CLI.exe profiles --list` – list found profiles.
+* `SMDownloader_CLI.exe profiles --exists "name"` – check if a profile exists.
+* `SMDownloader_CLI.exe profiles --path "name"` – show the path to a profile.
+* `SMDownloader_CLI.exe profiles --links_all` – show the total number of links.
+
+## Downloading
+* `SMDownloader_CLI.exe download --all` – process links from all profiles.
+* `SMDownloader_CLI.exe download --profile "name"` – process links only from one profile.
+
+# GUI Limitations
+
+**Currently the GUI does NOT support:**
+* creating and editing profiles (only viewing);
+* editing settings (this is available in CLI);
+* processing only 1 profile at a time (this is available in CLI).
+
+# Credits
+I made this project alone. Should I thank myself? Well, okay:
+Mister Smarty Pants – lead coder, designer, etc.
+
+# Frequently Asked Questions (FAQ)
+
+## How do I add download links?
+First, you need a profile. You can use presets or create a profile based on a preset:
+1. `music_opus` – profile for downloading music in opus format. If you need mp3, you can base your profile on this one.
+2. `video_mp4` – profile for downloading video in mp4 format.
+
+Decided on a profile / created your own? Great! Here's how to add links to a profile:
+1. Find `sources.txt` or create it if it doesn't exist in the profile.
+2. Write your links (one link per line).
+3. Optionally add comments (a comment occupies the whole line and starts with `#`).
+
+## GUI sucks, where are the settings?
+You can configure the program via CLI or manually in `data/settings.json`. The GUI is raw and has no settings editor yet.
+
+## Why do I need another interface for yt-dlp?
+The main purpose of this project is not the interface, but **proxy rotation**. The program automatically switches proxies on errors, helping to bypass blocks. There is also a CLI version in addition to the GUI.
+
+## Slow download speed
+It may be slow because free proxies are used by default. I've optimised the validation to squeeze as much as possible out of free proxies. In the long run, it's not that slow thanks to bypassing error 429 (Too many requests). If you need to download a few thousand files (like I do), this project is fine. But if you only have a few files to download, this project is not worth it.
