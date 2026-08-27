@@ -15,3 +15,7 @@ build/
 downloaded_music
 downloads
 *.exe
+venv/
+dist/
+build/
+*.spec
