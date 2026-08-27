@@ -1,20 +1,41 @@
-
-# TODO: перевести на английский комментарии
-
 import yt_dlp
 import time
 import logging
+import os
+import sys
+from pathlib import Path
+
+# create a logger with the same name as the file (downloader)
+logger = logging.getLogger(__name__)
+
+# настройка кэша для ffmpeg
+
+# если windows
+if sys.platform == 'win32':
+    # добавить путь
+    cache_dir = Path(os.environ.get('APPDATA', os.path.expanduser('~'))) / 'SmartyMusicDownloader' / 'ffmpeg_cache'
+# иначе
+else:
+    # добавить другой путь
+    cache_dir = Path.home() / '.cache' / 'smarty_music_downloader' / 'ffmpeg'
+
+cache_dir.mkdir(parents=True, exist_ok=True)
+os.environ['STATIC_FFMPEG_DIR'] = str(cache_dir)
+
+# импортировать ffmpeg после установки переменной окружения
 import static_ffmpeg
+# попробовать скачать/проверить наличие ffmpeg
+try:
+    static_ffmpeg.add_paths()
+# если ошибка то выйти с программы и вывести сообщение
+except Exception as e:
+    logger.critical("Failed to download/initialize ffmpeg: %s", e)
+    raise SystemExit("FFmpeg is required for this application.")
+
 # core
 from .profile_manager import ProfileManager
 from .settings import Settings
 from .proxy_rotator import ProxyRotator
-
-# установить ffmpeg
-static_ffmpeg.add_paths()
-
-# create a logger with the same name as the file (downloader)
-logger = logging.getLogger(__name__)
 
 class Downloader:
     def __init__(self, settings: Settings, profile_manager: ProfileManager, proxy_rotator: ProxyRotator):
