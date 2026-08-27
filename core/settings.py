@@ -1,16 +1,17 @@
 import json
 import logging
+from path_utils import get_root_dir
 from pathlib import Path
 from typing import Any
 
 # Create a logger with the same name as the file (settings)
 logger = logging.getLogger(__name__)
 
-# BASE_DIR stores the location info of the project/core. .parent is an attribute holding the parent directory
-BASE_DIR = Path(__file__).parent
+# BASE_DIR
+ROOT_DIR = get_root_dir()
 # BASE_DIR.parent is the project root directory. The / operator in pathlib is overloaded for paths,
 # works cross-platform
-CONFIG_PATH = BASE_DIR.parent / "data" / "settings.json"
+CONFIG_PATH = ROOT_DIR.parent / "data" / "settings.json"
 
 class Settings:
     # default settings
