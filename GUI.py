@@ -17,14 +17,23 @@ import tkinter as tk
 from tkinter import ttk
 from tktooltip import ToolTip
 from api import Api
-
+# path_utils.py
+from core.path_utils import get_root_dir
 # api
 api = Api()
 
+# ROOT_DIR
+ROOT_DIR = get_root_dir()
+
 # logging settings
+# log file
+log_file = ROOT_DIR / "data" / "smarty_music_downloader.log"
+# Create data if not available
+log_file.parent.mkdir(parents=True, exist_ok=True)
+
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
-file_handler = logging.FileHandler('smarty_music_downloader.log', mode='w', encoding='utf-8')
+file_handler = logging.FileHandler(log_file, mode='w', encoding='utf-8')
 file_handler.setLevel(logging.DEBUG)
 file_handler.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
 console_handler = logging.StreamHandler(sys.stdout)
@@ -156,7 +165,7 @@ def main():
             text.config(state=tk.NORMAL)
             # очистка
             text.delete(1.0, tk.END)
-            with open("smarty_music_downloader.log", "r", encoding="utf-8") as f:
+            with open(log_file, "r", encoding="utf-8") as f:
                 for line in f:
                     text.insert(tk.END, line)
         except FileNotFoundError:

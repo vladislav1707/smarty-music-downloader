@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 ROOT_DIR = get_root_dir()
 # BASE_DIR.parent is the project root directory. The / operator in pathlib is overloaded for paths,
 # works cross-platform
-CONFIG_PATH = ROOT_DIR.parent / "data" / "settings.json"
+CONFIG_PATH = ROOT_DIR / "data" / "settings.json"
 
 class Settings:
     # default settings
