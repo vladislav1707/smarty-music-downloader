@@ -89,11 +89,11 @@ class Downloader:
         for url in links:
             success = False
             attempt = 0
-            #! пытаться пока не получится
+            # пытаться пока не получится
             while not success:
                 attempt += 1
 
-                #! попытаться обработать ссылку, при неудаче сменить прокси
+                # попытаться обработать ссылку, при неудаче сменить прокси
                 try:
                     # попытка скачивания
                     with yt_dlp.YoutubeDL(ytdlp_args) as ydl:
