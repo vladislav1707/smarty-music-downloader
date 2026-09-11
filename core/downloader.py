@@ -11,16 +11,16 @@ logger = logging.getLogger(__name__)
 # настройка кэша для ffmpeg
 
 # если windows
-if sys.platform == 'win32':
+if sys.platform == "win32":
     # добавить путь
-    cache_dir = Path(os.environ.get('APPDATA', os.path.expanduser('~'))) / 'SmartyMusicDownloader' / 'ffmpeg_cache'
+    cache_dir = Path(os.environ.get("APPDATA", os.path.expanduser("~"))) / "SmartyMusicDownloader" / "ffmpeg_cache"
 # иначе
 else:
     # добавить другой путь
-    cache_dir = Path.home() / '.cache' / 'smarty_music_downloader' / 'ffmpeg'
+    cache_dir = Path.home() / ".cache" / "smarty_music_downloader" / "ffmpeg"
 
 cache_dir.mkdir(parents=True, exist_ok=True)
-os.environ['STATIC_FFMPEG_DIR'] = str(cache_dir)
+os.environ["STATIC_FFMPEG_DIR"] = str(cache_dir)
 
 # импортировать ffmpeg после установки переменной окружения
 import static_ffmpeg
@@ -38,6 +38,25 @@ from .settings import Settings
 from .proxy_rotator import ProxyRotator
 
 class Downloader:
+    # список ошибок при которых не надо повторять попытку скачивания
+    PERMANENT_ERROR_MARKERS = (
+        "private video",
+        "this video is private",
+        "video unavailable",
+        "this video is not available",
+        "this video has been removed",
+        "removed by the uploader",
+        "removed by uploader",
+        "this video has been deleted",
+        "deleted video",
+        "this video is no longer available",
+        "account associated with this video has been terminated",
+        "the uploader has not made this video available",
+        "no video formats found",
+        "unsupported url",
+        "sign in to confirm your age",
+    )
+    
     def __init__(self, settings: Settings, profile_manager: ProfileManager, proxy_rotator: ProxyRotator):
         """Constructor"""
         self._settings = settings
@@ -70,11 +89,11 @@ class Downloader:
         for url in links:
             success = False
             attempt = 0
-            # пытаться пока не получится
+            #! пытаться пока не получится
             while not success:
                 attempt += 1
 
-                # попытаться обработать ссылку, при неудаче сменить прокси
+                #! попытаться обработать ссылку, при неудаче сменить прокси
                 try:
                     # попытка скачивания
                     with yt_dlp.YoutubeDL(ytdlp_args) as ydl:
@@ -86,19 +105,25 @@ class Downloader:
                         # yt-dlp завершился с ошибкой, но не выбросил исключение
                         raise Exception(f"yt-dlp returned error code {ret_code}")
                 except Exception as e:
+                    # проверить что ошибка не перманентная, если перманентная выйти из цикла и вывести сообщение в лог
+                    if self._is_permanent_error(e):
+                        logger.warning("Error \"%s\" occurred on link \"%s\", skipped", e, url)
+                        break
+                        
                     logger.debug(
                         "Attempt %d failed for \"%s\": %s. Retrying with next proxy...",
-                        attempt, url, str(e)
+                        attempt, url, e
                     )
                     # после ошибки сменить прокси
                     self._proxy_rotator.next_proxy()
-                    ytdlp_args['proxy'] = self._proxy_rotator.get_proxy()
+                    ytdlp_args["proxy"] = self._proxy_rotator.get_proxy()
 
                     self._ensure_proxy(ytdlp_args)
 
                     # пауза
                     time.sleep(1)
-            self._downloaded_links += 1
+            if success:
+                self._downloaded_links += 1
 
     def download_all(self):
         """Download all profiles"""
@@ -128,6 +153,16 @@ class Downloader:
             time.sleep(5)
             self._proxy_rotator.next_proxy()
             ytdlp_args["proxy"] = self._proxy_rotator.get_proxy()
+
+    def _is_permanent_error(self, exc: Exception) -> bool:
+        """Проверить что ошибка не исправится сменой прокси и повторной попыткой"""
+        text = str(exc).lower()
+        # для каждого маркера перманентной ошибки
+        for marker in self.PERMANENT_ERROR_MARKERS:
+            # проверить наличие в тексте, если есть True, иначе False
+            if marker in text:
+                return True
+        return False
 
     def get_downloaded_links(self) -> int:
         return self._downloaded_links
