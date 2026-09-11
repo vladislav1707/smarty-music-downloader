@@ -37,6 +37,42 @@ from .profile_manager import ProfileManager
 from .settings import Settings
 from .proxy_rotator import ProxyRotator
 
+class _ErrorCapturingYDL(yt_dlp.YoutubeDL):
+    """YoutubeDL, но который записывает ошибки
+
+    вместо игнорирования ошибок либо прерывания из-за ошибок собирает список ошибок
+    """
+
+    def __init__(self, *args, **kwargs):
+        """Инициализация. Принимает аргументы и передает в __init__ родительского класса"""
+        super().__init__(*args, **kwargs)
+        # список возникших ошибок
+        self.error_messages: list[str] = []
+
+    def report_error(self, message, *args, **kwargs):
+        """вызывается в YoutubeDL когда что-то пошло не так"""
+        
+        # если есть аргументы то:
+        if args:
+            # попытаться подставить в сообщение аргументы
+            try:
+                formatted = message % args
+            # при ошибке оставить просто сообщение
+            except Exception:
+                formatted = message
+        # если аргументов нет то оставить сообщение как есть и ничего не подставлять
+        else:
+            formatted = message
+
+        # добавить в список ошибок ошибку
+        self.error_messages.append(str(formatted))
+        # вызвать report_error из родительского класса(yt_dlp.YoutubeDL) чтобы поведение осталось как есть
+        super().report_error(message, *args, **kwargs)
+
+class _RetryableError(Exception):
+    """свое исключение для ситуаций когда надо повторить попытку"""
+    pass
+
 class Downloader:
     # список ошибок при которых не надо повторять попытку скачивания
     PERMANENT_ERROR_MARKERS = (
@@ -96,17 +132,40 @@ class Downloader:
                 # попытаться обработать ссылку, при неудаче сменить прокси
                 try:
                     # попытка скачивания
-                    with yt_dlp.YoutubeDL(ytdlp_args) as ydl:
+                    with _ErrorCapturingYDL(ytdlp_args) as ydl:
                         ret_code = ydl.download([url])
                     if ret_code == 0:
                         logger.info("Successfully downloaded \"%s\" after %d attempt(s)", url, attempt)
                         success = True
                     else:
-                        # yt-dlp завершился с ошибкой, но не выбросил исключение
-                        raise Exception(f"yt-dlp returned error code {ret_code}")
+                        # собрать ошибки которые были проигнорированы
+                        errors = ydl.error_messages
+
+                        # если есть ошибки:
+                        if errors:
+                            # список перманентных ошибок(только булевые значения)
+                            permanent_errors_list = []
+                            # для каждой ошибки в списке ошибок:
+                            for error in errors:
+                                # добавить булевое значение в список permanent_errors_list. True если ошибка перманентная, иначе False
+                                permanent_errors_list.append(self._is_permanent_error(error))
+                            # если все ошибки перманентные и больше повторять смысла нет:
+                            if all(permanent_errors_list):
+                                # вывести предупреждение
+                                logger.warning(
+                                "Some items in \"%s\" could not be downloaded (permanent errors): %s",
+                                url, "; ".join(errors)
+                                )
+                                # прервать цикл
+                                break
+
+                        # выбросить исключение _RetryableError (свое). {'; '.join(errors)} склеивает все ошибки в 1 строку используя ; как разделители
+                        raise _RetryableError(f"yt-dlp returned error code {ret_code}: {'; '.join(errors)}")
                 except Exception as e:
                     # проверить что ошибка не перманентная, если перманентная выйти из цикла и вывести сообщение в лог
-                    if self._is_permanent_error(e):
+                    # эта часть при обычных условиях не так нужна, она нужна когда ignoreerrors=False и в еще некоторых особых ситуациях
+                    # not isinstance(e, _RetryableError) проверяет что e не экземпляр класса _RetryableError
+                    if not isinstance(e, _RetryableError) and self._is_permanent_error(e):
                         logger.warning("Error \"%s\" occurred on link \"%s\", skipped", e, url)
                         break
                         
@@ -122,8 +181,7 @@ class Downloader:
 
                     # пауза
                     time.sleep(1)
-            if success:
-                self._downloaded_links += 1
+            self._downloaded_links += 1
 
     def download_all(self):
         """Download all profiles"""
@@ -154,7 +212,7 @@ class Downloader:
             self._proxy_rotator.next_proxy()
             ytdlp_args["proxy"] = self._proxy_rotator.get_proxy()
 
-    def _is_permanent_error(self, exc: Exception) -> bool:
+    def _is_permanent_error(self, exc: Exception | str) -> bool:
         """Проверить что ошибка не исправится сменой прокси и повторной попыткой"""
         text = str(exc).lower()
         # для каждого маркера перманентной ошибки
