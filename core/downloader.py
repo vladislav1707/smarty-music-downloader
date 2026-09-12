@@ -91,6 +91,8 @@ class Downloader:
         "no video formats found",
         "unsupported url",
         "sign in to confirm your age",
+        "premieres in",
+        "will premiere",
     )
     
     def __init__(self, settings: Settings, profile_manager: ProfileManager, proxy_rotator: ProxyRotator):

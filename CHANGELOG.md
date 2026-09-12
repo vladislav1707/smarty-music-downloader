@@ -3,6 +3,9 @@
 - Improved compatibility with Linux
 - Fixed a bug due to which the program could get stuck in an eternal loop during loading if a private video came across
 - Removed music_opus profile from presets for easier development
+- Fixed permanent errors not being detected when downloading playlists:
+  the original yt-dlp error is now captured and inspected, so playlists
+  with a private or unavailable item are skipped instead of retrying forever.
 
 # [3.0.0] - 2026-08-24
 **First public pre-release**
