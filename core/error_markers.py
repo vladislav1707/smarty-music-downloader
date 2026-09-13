@@ -1,0 +1,20 @@
+# ошибки которые нельзя исправить повторной попыткой с новым прокси
+PERMANENT_ERROR_MARKERS = (
+    "private video",
+    "this video is private",
+    "video unavailable",
+    "this video is not available",
+    "this video has been removed",
+    "removed by the uploader",
+    "removed by uploader",
+    "this video has been deleted",
+    "deleted video",
+    "this video is no longer available",
+    "account associated with this video has been terminated",
+    "the uploader has not made this video available",
+    "no video formats found",
+    "unsupported url",
+    "sign in to confirm your age",
+    "premieres in",
+    "will premiere",
+)

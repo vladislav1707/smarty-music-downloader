@@ -4,6 +4,7 @@ import logging
 import os
 import sys
 from pathlib import Path
+from .error_markers import PERMANENT_ERROR_MARKERS
 
 # create a logger with the same name as the file (downloader)
 logger = logging.getLogger(__name__)
@@ -74,27 +75,6 @@ class _RetryableError(Exception):
     pass
 
 class Downloader:
-    # список ошибок при которых не надо повторять попытку скачивания
-    PERMANENT_ERROR_MARKERS = (
-        "private video",
-        "this video is private",
-        "video unavailable",
-        "this video is not available",
-        "this video has been removed",
-        "removed by the uploader",
-        "removed by uploader",
-        "this video has been deleted",
-        "deleted video",
-        "this video is no longer available",
-        "account associated with this video has been terminated",
-        "the uploader has not made this video available",
-        "no video formats found",
-        "unsupported url",
-        "sign in to confirm your age",
-        "premieres in",
-        "will premiere",
-    )
-    
     def __init__(self, settings: Settings, profile_manager: ProfileManager, proxy_rotator: ProxyRotator):
         """Constructor"""
         self._settings = settings
@@ -113,17 +93,43 @@ class Downloader:
 
         # 2. получить список ссылок и аргументы профиля
         ytdlp_args = self._profile_manager.get_ytdlp_args(name)
-        links = self._profile_manager.get_links(name)
-        if not links:
+        # в raw_links хранится список ссылок, но он содержит плейлисты
+        raw_links = self._profile_manager.get_links(name)
+        if not raw_links:
             logger.warning("Profile \"%s\" contains no links", name)
             return
+
+        # 3. из raw_links получить links (1 ссылка на плейлист = много ссылок на его содержимое)
+        # специальный список аргументов yt-dlp для получения ссылок из плейлиста, отдельный от списка аргументов для скачивания
+        extract_args = {
+            "quiet": True,
+            "extract_flat": True,
+            "skip_download": True,
+            "ignoreerrors": True,
+        }
+        # в links хранится список ссылок, но ссылки на плейлисты превращаются в ссылки на содержимое плейлистов
+        links = []
+        # для каждого url в raw_links:
+        for url in raw_links:
+            # получить из плейлиста ссылки на его содержимое
+            expanded = self._expand_with_retry(url, extract_args)
+            # добавить все полученные ссылки в список ссылок
+            links.extend(expanded)
+
+        if not links:
+            logger.warning("Profile \"%s\" expanded to 0 URLs, nothing to download", name)
+            return
+
+        # не скачивать плейлисты полностью, только по 1 элементу
+        # это важно так как программа сама превращает плейлист в список элементов в плейлисте (важно для улучшения ротации прокси)
+        ytdlp_args["noplaylist"] = True
         
         # передать прокси
         ytdlp_args["proxy"] = self._proxy_rotator.get_proxy()
         # убедится что прокси не None
         self._ensure_proxy(ytdlp_args)
 
-        # 3. для каждой ссылки в профиле скачать с помощью yt-dlp и подставить аргументы из профиля
+        # 4. для каждой ссылки в профиле скачать с помощью yt-dlp и подставить аргументы из профиля
         for url in links:
             success = False
             attempt = 0
@@ -204,6 +210,9 @@ class Downloader:
             except Exception as e:
                 logger.error("Failed to process profile \"%s\": %s", name, str(e))
 
+    def get_downloaded_links(self) -> int:
+        return self._downloaded_links
+
     def _ensure_proxy(self, ytdlp_args: dict):
         """Убедится что прокси не None (ОЧЕНЬ ВАЖНО)"""
         attempts = 0
@@ -218,11 +227,100 @@ class Downloader:
         """Проверить что ошибка не исправится сменой прокси и повторной попыткой"""
         text = str(exc).lower()
         # для каждого маркера перманентной ошибки
-        for marker in self.PERMANENT_ERROR_MARKERS:
+        for marker in PERMANENT_ERROR_MARKERS:
             # проверить наличие в тексте, если есть True, иначе False
             if marker in text:
                 return True
         return False
 
-    def get_downloaded_links(self) -> int:
-        return self._downloaded_links
+    def _expand_url(self, url: str, extract_args: dict) -> list[str]:
+        """Принимает ссылку, и если она ведет на плейлист то из 1 ссылки на плейлист получить много ссылок на содержимое"""
+        # распаковать ссылку если возможно
+        with _ErrorCapturingYDL(extract_args) as ydl:
+            info = ydl.extract_info(url, download=False)
+
+        # если нет info то вернуть список с 1 ссылкой которая была в аргументах ничего не трогая
+        if not info:
+            return [url]
+
+        # содержимое плейлиста
+        entries = info.get("entries")
+
+        # если нет entries значит это не плейлист
+        if entries is None:
+            return [url]
+
+        # список где будет результат
+        result = []
+        # для каждой ссылки в плейлисте:
+        for entry in entries:
+            # получить ссылку
+            entry_url = self._entry_to_url(entry)
+            # если ссылка есть то добавить ее к результату
+            if entry_url:
+                result.append(entry_url)
+
+        # вернуть result если есть, в ином случае ссылку как была
+        return result or [url]
+
+    def _expand_with_retry(self, url: str, extract_args: dict) -> list[str]:
+        """Если ссылка ведет на плейлист то превратит ее в список ссылок на содержимое плейлиста"""
+        attempt = 0
+        while True:
+            attempt += 1
+
+            # прочесть текущий прокси
+            extract_args["proxy"] = self._proxy_rotator.get_proxy()
+            # убедится что прокси не None
+            self._ensure_proxy(extract_args)
+
+            # попытаться вызвать _expand_url(), меняет прокси при ошибках(кроме перманентных)
+            try:
+                result = self._expand_url(url, extract_args)
+                if attempt > 1:
+                    logger.info("Successfully expanded \"%s\" after %d attempt(s)", url, attempt)
+                return result
+            except Exception as e:
+                # если ошибка перманентная то вернуть пустой список и написать warning в лог
+                if self._is_permanent_error(e):
+                    logger.warning("Permanent error during expanding \"%s\": %s. Skipping.", url, e)
+                    return []
+
+                # логгировать ошибку
+                logger.debug(
+                    "Expanding attempt %d failed for \"%s\": %s. Retrying with next proxy...",
+                    attempt, url, e
+                )
+
+                # сменить прокси и повторить попытку
+                self._proxy_rotator.next_proxy()
+                time.sleep(1)
+
+    def _entry_to_url(self, entry: dict) -> str | None:
+        """Принимает элемент плейлиста. Возвращает ссылку на этот элемент плейлиста (либо None если не удалось)"""
+        # вернуть None если entry(элемент плейлиста) пустой
+        if not entry:
+            return None
+
+        # перебрать все места где может быть url пока url не будет найден:
+        for key in ("webpage_url", "original_url", "url"):
+            # попытаться получить значение из поля которое сейчас проверяется
+            value = entry.get(key)
+            # если значение есть и оно начинается на http то значит это подходящий url и его можно вернуть
+            if value and value.startswith("http"):
+                return value
+
+        # ID без http. Только известных программе экстракторов
+        raw = entry.get("url") or entry.get("id")
+        # если ID без http не найден то вернуть None
+        if not raw:
+            return None
+
+        # ie расшифровывается как info extractor. Собрать ссылку только для известных экстракторов
+        ie_key = (entry.get("ie_key") or "").lower()
+        if "youtube" in ie_key:
+            return f"https://www.youtube.com/watch?v={raw}"
+
+        # если экстрактор незнакомый - не пытаться угадать шаблон URL
+        logger.debug("Cannot build URL for entry ie_key=%s raw=%r", ie_key, raw)
+        return None
