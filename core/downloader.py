@@ -1,9 +1,11 @@
-import yt_dlp
-import time
 import logging
 import os
 import sys
+import time
 from pathlib import Path
+
+import yt_dlp
+
 from .error_markers import PERMANENT_ERROR_MARKERS
 
 # create a logger with the same name as the file (downloader)
@@ -14,7 +16,11 @@ logger = logging.getLogger(__name__)
 # если windows
 if sys.platform == "win32":
     # добавить путь
-    cache_dir = Path(os.environ.get("APPDATA", os.path.expanduser("~"))) / "SmartyMusicDownloader" / "ffmpeg_cache"
+    cache_dir = (
+        Path(os.environ.get("APPDATA", os.path.expanduser("~")))
+        / "SmartyMusicDownloader"
+        / "ffmpeg_cache"
+    )
 # иначе
 else:
     # добавить другой путь
@@ -25,18 +31,20 @@ os.environ["STATIC_FFMPEG_DIR"] = str(cache_dir)
 
 # импортировать ffmpeg после установки переменной окружения
 import static_ffmpeg
+
 # попробовать скачать/проверить наличие ffmpeg
 try:
     static_ffmpeg.add_paths()
 # если ошибка то выйти с программы и вывести сообщение
-except Exception as e:
+except Exception as e:  # noqa: BLE001
     logger.critical("Failed to download/initialize ffmpeg: %s", e)
     raise SystemExit("FFmpeg is required for this application.")
 
 # core
 from .profile_manager import ProfileManager
-from .settings import Settings
 from .proxy_rotator import ProxyRotator
+from .settings import Settings
+
 
 class _ErrorCapturingYDL(yt_dlp.YoutubeDL):
     """YoutubeDL, но который записывает ошибки
@@ -52,14 +60,14 @@ class _ErrorCapturingYDL(yt_dlp.YoutubeDL):
 
     def report_error(self, message, *args, **kwargs):
         """вызывается в YoutubeDL когда что-то пошло не так"""
-        
+
         # если есть аргументы то:
         if args:
             # попытаться подставить в сообщение аргументы
             try:
                 formatted = message % args
             # при ошибке оставить просто сообщение
-            except Exception:
+            except (TypeError, ValueError, KeyError):
                 formatted = message
         # если аргументов нет то оставить сообщение как есть и ничего не подставлять
         else:
@@ -70,12 +78,18 @@ class _ErrorCapturingYDL(yt_dlp.YoutubeDL):
         # вызвать report_error из родительского класса(yt_dlp.YoutubeDL) чтобы поведение осталось как есть
         super().report_error(message, *args, **kwargs)
 
+
 class _RetryableError(Exception):
     """свое исключение для ситуаций когда надо повторить попытку"""
-    pass
+
 
 class Downloader:
-    def __init__(self, settings: Settings, profile_manager: ProfileManager, proxy_rotator: ProxyRotator):
+    def __init__(
+        self,
+        settings: Settings,
+        profile_manager: ProfileManager,
+        proxy_rotator: ProxyRotator,
+    ):
         """Constructor"""
         self._settings = settings
         self._profile_manager = profile_manager
@@ -96,7 +110,7 @@ class Downloader:
         # в raw_links хранится список ссылок, но он содержит плейлисты
         raw_links = self._profile_manager.get_links(name)
         if not raw_links:
-            logger.warning("Profile \"%s\" contains no links", name)
+            logger.warning('Profile "%s" contains no links', name)
             return
 
         # 3. из raw_links получить links (1 ссылка на плейлист = много ссылок на его содержимое)
@@ -117,13 +131,13 @@ class Downloader:
             links.extend(expanded)
 
         if not links:
-            logger.warning("Profile \"%s\" expanded to 0 URLs, nothing to download", name)
+            logger.warning('Profile "%s" expanded to 0 URLs, nothing to download', name)
             return
 
         # не скачивать плейлисты полностью, только по 1 элементу
         # это важно так как программа сама превращает плейлист в список элементов в плейлисте (важно для улучшения ротации прокси)
         ytdlp_args["noplaylist"] = True
-        
+
         # передать прокси
         ytdlp_args["proxy"] = self._proxy_rotator.get_proxy()
         # убедится что прокси не None
@@ -143,7 +157,11 @@ class Downloader:
                     with _ErrorCapturingYDL(ytdlp_args) as ydl:
                         ret_code = ydl.download([url])
                     if ret_code == 0:
-                        logger.info("Successfully downloaded \"%s\" after %d attempt(s)", url, attempt)
+                        logger.info(
+                            'Successfully downloaded "%s" after %d attempt(s)',
+                            url,
+                            attempt,
+                        )
                         success = True
                     else:
                         # собрать ошибки которые были проигнорированы
@@ -156,30 +174,41 @@ class Downloader:
                             # для каждой ошибки в списке ошибок:
                             for error in errors:
                                 # добавить булевое значение в список permanent_errors_list. True если ошибка перманентная, иначе False
-                                permanent_errors_list.append(self._is_permanent_error(error))
+                                permanent_errors_list.append(
+                                    self._is_permanent_error(error)
+                                )
                             # если все ошибки перманентные и больше повторять смысла нет:
                             if all(permanent_errors_list):
                                 # вывести предупреждение
                                 logger.warning(
-                                "Some items in \"%s\" could not be downloaded (permanent errors): %s",
-                                url, "; ".join(errors)
+                                    'Some items in "%s" could not be downloaded (permanent errors): %s',
+                                    url,
+                                    "; ".join(errors),
                                 )
                                 # прервать цикл
                                 break
 
                         # выбросить исключение _RetryableError (свое). {'; '.join(errors)} склеивает все ошибки в 1 строку используя ; как разделители
-                        raise _RetryableError(f"yt-dlp returned error code {ret_code}: {'; '.join(errors)}")
-                except Exception as e:
+                        raise _RetryableError(
+                            f"yt-dlp returned error code {ret_code}: {'; '.join(errors)}"
+                        )
+                except Exception as e:  # noqa: BLE001
                     # проверить что ошибка не перманентная, если перманентная выйти из цикла и вывести сообщение в лог
                     # эта часть при обычных условиях не так нужна, она нужна когда ignoreerrors=False и в еще некоторых особых ситуациях
                     # not isinstance(e, _RetryableError) проверяет что e не экземпляр класса _RetryableError
-                    if not isinstance(e, _RetryableError) and self._is_permanent_error(e):
-                        logger.warning("Error \"%s\" occurred on link \"%s\", skipped", e, url)
+                    if not isinstance(e, _RetryableError) and self._is_permanent_error(
+                        e
+                    ):
+                        logger.warning(
+                            'Error "%s" occurred on link "%s", skipped', e, url
+                        )
                         break
-                        
+
                     logger.debug(
-                        "Attempt %d failed for \"%s\": %s. Retrying with next proxy...",
-                        attempt, url, e
+                        'Attempt %d failed for "%s": %s. Retrying with next proxy...',
+                        attempt,
+                        url,
+                        e,
                     )
                     # после ошибки сменить прокси
                     self._proxy_rotator.next_proxy()
@@ -206,9 +235,9 @@ class Downloader:
             name = profiles[i]
             try:
                 self.download_profile(name)
-                logger.info("Profile \"%s\" processed successfully", name)
-            except Exception as e:
-                logger.error("Failed to process profile \"%s\": %s", name, str(e))
+                logger.info('Profile "%s" processed successfully', name)
+            except Exception as e:  # noqa: BLE001
+                logger.error('Failed to process profile "%s": %s', name, str(e))
 
     def get_downloaded_links(self) -> int:
         return self._downloaded_links
@@ -218,7 +247,10 @@ class Downloader:
         attempts = 0
         while ytdlp_args["proxy"] is None:
             attempts += 1
-            logger.info("%s | Waiting for proxies to be validated... (next check in 5s)", attempts)
+            logger.info(
+                "%s | Waiting for proxies to be validated... (next check in 5s)",
+                attempts,
+            )
             time.sleep(5)
             self._proxy_rotator.next_proxy()
             ytdlp_args["proxy"] = self._proxy_rotator.get_proxy()
@@ -278,18 +310,24 @@ class Downloader:
             try:
                 result = self._expand_url(url, extract_args)
                 if attempt > 1:
-                    logger.info("Successfully expanded \"%s\" after %d attempt(s)", url, attempt)
+                    logger.info(
+                        'Successfully expanded "%s" after %d attempt(s)', url, attempt
+                    )
                 return result
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001
                 # если ошибка перманентная то вернуть пустой список и написать warning в лог
                 if self._is_permanent_error(e):
-                    logger.warning("Permanent error during expanding \"%s\": %s. Skipping.", url, e)
+                    logger.warning(
+                        'Permanent error during expanding "%s": %s. Skipping.', url, e
+                    )
                     return []
 
                 # логгировать ошибку
                 logger.debug(
-                    "Expanding attempt %d failed for \"%s\": %s. Retrying with next proxy...",
-                    attempt, url, e
+                    'Expanding attempt %d failed for "%s": %s. Retrying with next proxy...',
+                    attempt,
+                    url,
+                    e,
                 )
 
                 # сменить прокси и повторить попытку

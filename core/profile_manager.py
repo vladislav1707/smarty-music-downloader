@@ -1,9 +1,10 @@
-from .settings import Settings
 import json
 import logging
-from core.path_utils import get_root_dir
 from pathlib import Path
-from typing import List
+
+from core.path_utils import get_root_dir
+
+from .settings import Settings
 
 # create a logger with the same name as the file (profile_manager)
 logger = logging.getLogger(__name__)
@@ -32,7 +33,7 @@ class ProfileManager:
         else:
             self._profiles_dir = Path(raw)
 
-    def get_links(self, name: str) -> List[str]:
+    def get_links(self, name: str) -> list[str]:
         """Get list of download links for a specific profile"""
         # get the location of sources.txt inside the profile
         sources_file = self.profile_path(name) / "sources.txt"
@@ -57,7 +58,7 @@ class ProfileManager:
             logger.error("Failed to open %s: %s", sources_file, e)
         return links
 
-    def get_all_links(self) -> List[str]:
+    def get_all_links(self) -> list[str]:
         """Get list of download links for all profiles"""
         profile_list = self.list_profiles()
         list = []
@@ -98,7 +99,7 @@ class ProfileManager:
             logger.critical("Failed to open from %s: %s", args_file, e)
             raise SystemExit
 
-    def list_profiles(self) -> List[str]:
+    def list_profiles(self) -> list[str]:
         """Return a list of available profiles"""
         # if the profiles directory does not exist or is not a directory, return empty list
         if not self._profiles_dir.exists() or not self._profiles_dir.is_dir():

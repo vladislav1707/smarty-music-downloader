@@ -1,8 +1,8 @@
 import json
 import logging
+from typing import Any, ClassVar
+
 from core.path_utils import get_root_dir
-from pathlib import Path
-from typing import Any
 
 # Create a logger with the same name as the file (settings)
 logger = logging.getLogger(__name__)
@@ -13,14 +13,15 @@ ROOT_DIR = get_root_dir()
 # works cross-platform
 CONFIG_PATH = ROOT_DIR / "data" / "settings.json"
 
+
 class Settings:
     # default settings
-    DEFAULTS = {
-    "proxy_url": "https://raw.githubusercontent.com/proxifly/free-proxy-list/refs/heads/main/proxies/protocols/socks5/data.txt",
-    "profiles_dir": "profile_presets", # "profile_presets" is a special value that points to presets
-    "proxy_refresh_interval": 305,
-    "proxy_cleanup_interval": 600,
-    "max_validation_threads": 30
+    DEFAULTS: ClassVar[dict[str, object]] = {
+        "proxy_url": "https://raw.githubusercontent.com/proxifly/free-proxy-list/refs/heads/main/proxies/protocols/socks5/data.txt",
+        "profiles_dir": "profile_presets",  # "profile_presets" is a special value that points to presets
+        "proxy_refresh_interval": 305,
+        "proxy_cleanup_interval": 600,
+        "max_validation_threads": 30,
     }
 
     def __init__(self):
@@ -40,7 +41,7 @@ class Settings:
                 raise SystemExit
         # load settings from file into _data (dictionary on which operations are performed)
         self.reload()
-    
+
     def get(self, name: str) -> Any:
         """Read a setting (getter)"""
         return self._data.get(name)
@@ -53,13 +54,15 @@ class Settings:
     def set(self, name: str, value: Any) -> None:
         """Change a setting (setter)"""
         self._data[name] = value
-    
+
     def save(self) -> None:
         """Write _data to file (persist changes)"""
         # The 'with' statement ensures proper resource cleanup. Open config file for writing.
         try:
             with open(CONFIG_PATH, "w", encoding="utf-8") as f:
-                json.dump(self._data, f, indent=4, ensure_ascii=False) # update json file
+                json.dump(
+                    self._data, f, indent=4, ensure_ascii=False
+                )  # update json file
             logger.info("Settings saved to %s", CONFIG_PATH)
         except (FileNotFoundError, json.JSONDecodeError, PermissionError, OSError) as e:
             logger.error("Failed to save settings from %s: %s", CONFIG_PATH, e)
@@ -80,12 +83,14 @@ class Settings:
                 logger.info("Setting %s to default value: %s", key, value)
         # load from file into _data
         self._data = loaded
-    
+
     def reset_all(self) -> None:
         """COMPLETE reset of settings. To accept, save() is required"""
-        self._data = self.DEFAULTS.copy() # _data now contains a copy of default settings
+        self._data = (
+            self.DEFAULTS.copy()
+        )  # _data now contains a copy of default settings
         logger.warning("Settings.json is COMPLETELY reset to default settings")
-    
+
     def reset(self, name: str) -> None:
         """reset a single setting"""
         # if setting does not exist, raise error about unknown setting
@@ -96,4 +101,3 @@ class Settings:
         else:
             # if not in DEFAULTS delete setting
             self._data.pop(name)
-        

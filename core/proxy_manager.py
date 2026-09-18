@@ -1,7 +1,8 @@
-import requests
 import logging
+
+import requests
+
 from .settings import Settings
-from typing import List
 
 # create a logger with the same name as the file (profile_manager)
 logger = logging.getLogger(__name__)
@@ -17,7 +18,7 @@ class ProxyManager:
             logger.critical("Configuration error, \"proxy_url\" not set")
             raise SystemExit
 
-    def fetch_proxies(self) -> List[str]:
+    def fetch_proxies(self) -> list[str]:
         """Return a list of proxies"""
         try:
             # HTTP request to the page to retrieve proxies; one proxy per line

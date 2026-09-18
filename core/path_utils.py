@@ -2,6 +2,7 @@
 import sys
 from pathlib import Path
 
+
 def get_root_dir() -> Path:
     """
     Определяет корневую директорию проекта.

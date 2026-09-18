@@ -1,9 +1,10 @@
-from core.settings import Settings
+import logging
+from typing import Any
+
+from core.downloader import Downloader
 from core.profile_manager import ProfileManager
 from core.proxy_rotator import ProxyRotator
-from core.downloader import Downloader
-from typing import List, Any
-import logging
+from core.settings import Settings
 
 # Create a logger with the same name as the file (api)
 logger = logging.getLogger(__name__)
@@ -48,7 +49,7 @@ class Api:
 
     # profile management
 
-    def list_profiles(self) -> List[str]:
+    def list_profiles(self) -> list[str]:
         """Returns a list containing all the names of the profiles found"""
         return self._profile_manager.list_profiles()
 

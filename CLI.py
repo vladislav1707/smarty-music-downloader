@@ -1,12 +1,16 @@
 import argparse
 import logging
 import sys
+
 # api
 from api import Api
+
 # path_utils.py
 from core.path_utils import get_root_dir
+
 # version
 from version import __version__
+
 
 def main():
     # ROOT_DIR

@@ -1,19 +1,19 @@
-
-# TODO: перевод комментов на английский
-
-import time
 import logging
+import queue
+import threading
+import time
+from urllib.parse import urlparse
+
 import requests
 import socks
-import threading
-import queue
-from urllib.parse import urlparse
+
 # core
 from .proxy_manager import ProxyManager
 from .settings import Settings
 
 # create a logger with the same name as the file (proxy_rotator)
 logger = logging.getLogger(__name__)
+
 
 class ProxyRotator:
     def __init__(self, settings: Settings):
@@ -65,7 +65,7 @@ class ProxyRotator:
 
     def _update_working_proxy_list(self):
         """Этот метод нужен чтобы создать воркеры и управлять ими"""
-        # создать заданное в настройках количество потоков для валидации прокси    
+        # создать заданное в настройках количество потоков для валидации прокси
         for i in range(self._max_validation_threads):
             threading.Thread(target=self._worker_loop, daemon=True).start()
         # бесконечный цикл: скачать список -> сделать очередь чтобы не портить _proxy_list
@@ -74,7 +74,7 @@ class ProxyRotator:
             self._update_proxy_list()
             self._cleanup_working_proxy_list()
             # обновление очереди прокси
-            with self.locker:   # чтобы воркеры не читали во время очистки
+            with self.locker:  # чтобы воркеры не читали во время очистки
                 while not self._validation_queue.empty():
                     try:
                         # попытка очистить список
@@ -109,7 +109,9 @@ class ProxyRotator:
             self._proxy_list = self._proxy_manager.fetch_proxies()
             self._last_update = time.monotonic()
             if self._proxy_list:
-                logger.info(f"Proxy list updated: fetched {len(self._proxy_list)} proxies")
+                logger.info(
+                    f"Proxy list updated: fetched {len(self._proxy_list)} proxies"
+                )
             else:
                 logger.warning("Proxy list updated: fetched 0 proxies (empty list)")
 
@@ -121,14 +123,16 @@ class ProxyRotator:
         """Проверить только 1 прокси на работоспособность"""
         try:
             # если прокси socks5 или socks4
-            if proxy.startswith(('socks5://', 'socks4://')):
+            if proxy.startswith(("socks5://", "socks4://")):
                 # распарсить на протокол, хост и порт
                 parsed = urlparse(proxy)
                 # если нет хоста или порта то прокси не рабочий
                 if not parsed.hostname or not parsed.port:
                     return False
                 # записать тип прокси(SOCKS5 или SOCKS4)
-                proxy_type = socks.SOCKS5 if proxy.startswith('socks5://') else socks.SOCKS4
+                proxy_type = (
+                    socks.SOCKS5 if proxy.startswith("socks5://") else socks.SOCKS4
+                )
                 # Создаём SOCKS-сокет и пытаемся подключиться к YouTube
                 sock = socks.socksocket()
                 # установить прокси
@@ -136,31 +140,38 @@ class ProxyRotator:
                 # таймаут
                 sock.settimeout(5)
                 # попытка подключится
-                sock.connect(('www.youtube.com', 443))
+                sock.connect(("www.youtube.com", 443))
                 # закрыть сокет
                 sock.close()
                 return True
             # HEAD-запрос с отключенной проверкой SSL
             response = requests.head(
-                "https://www.youtube.com/",             # тестовый URL
-                proxies={                               # настройки прокси
+                "https://www.youtube.com/",  # тестовый URL
+                proxies={  # настройки прокси
                     "http": proxy,
                     "https": proxy,
                 },
-                timeout=(3, 5),                        # таймауты
-                verify=False,                           # отключить лишние проверки
-                allow_redirects=True                    # разрешаем редиректы
+                timeout=(3, 5),  # таймауты
+                verify=False,  # отключить лишние проверки
+                allow_redirects=True,  # разрешаем редиректы
             )
             # успешный статус (2xx или даже 3xx)
             return response.status_code < 400
-        except Exception as e:
-            logger.debug(f"Proxy {proxy} validation error: {e}")  
+        except (
+            requests.exceptions.RequestException,
+            socks.ProxyError,
+            OSError,
+            ValueError,
+        ) as e:
+            logger.debug(f"Proxy {proxy} validation error: {e}")
             # любая ошибка = прокси не работает
             return False
 
     def _cleanup_working_proxy_list(self):
         """Очистить список рабочих прокси если надо"""
         with self.locker:
-            if self._cleanup_interval > 0 and (time.monotonic() - self._last_cleanup) >= self._cleanup_interval:
+            if (
+                self._cleanup_interval > 0
+                and (time.monotonic() - self._last_cleanup) >= self._cleanup_interval
+            ):
                 self.working_proxy_list = []
-        

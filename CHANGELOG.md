@@ -1,3 +1,13 @@
+# [3.0.2] - 2026-09-13
+## Added
+- Increased download speed
+- Permanent errors moved to a separate python file
+## Fixed
+- Playlists no longer fail as a whole when the proxy dies mid-download.
+  Previously, a single dead proxy could stall the entire playlist because
+  proxy rotation only kicked in after the whole list finished. Now each
+  item is downloaded separately, with proxy rotation per item
+
 # [3.0.1] - 2026-09-11
 ## Fixed
 - Improved compatibility with Linux
