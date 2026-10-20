@@ -3,3 +3,5 @@ PySocks>=1.7.0
 tkinter-tooltip>=0.3.0
 static-ffmpeg
 yt-dlp-ejs
+requests
+bgutil-ytdlp-pot-provider
