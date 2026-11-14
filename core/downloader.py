@@ -1,3 +1,4 @@
+import atexit
 import logging
 import os
 import sys
@@ -7,6 +8,7 @@ from pathlib import Path
 import yt_dlp
 
 from .error_markers import PERMANENT_ERROR_MARKERS
+from .po_token_manager import PotBinaryManager, PotClient
 
 # create a logger with the same name as the file (downloader)
 logger = logging.getLogger(__name__)
@@ -98,6 +100,18 @@ class Downloader:
         # обработанные ссылки
         self._downloaded_links = 0
 
+        # PO Token manager
+        self._pot_manager = PotBinaryManager(port=4416)
+        # запустить bgutil-ytdlp-pot-provider
+        self._pot_manager.start()
+        # создать клиент для взаимодействия с bgutil-ytdlp-pot-provider
+        self._pot_client = PotClient("http://127.0.0.1:4416")
+        # atexit.register чтобы при выходе из программы bgutil-ytdlp-pot-provider был корректно остановлен
+        atexit.register(self._pot_manager.stop)
+        # время чтобы сервер успел запуститься
+        while not self._pot_client.ping():
+            time.sleep(3)
+
     def download_profile(self, name: str):
         """Download single profile"""
         # 1. проверить что профиль существует, если нет то ошибка
@@ -107,6 +121,13 @@ class Downloader:
 
         # 2. получить список ссылок и аргументы профиля
         ytdlp_args = self._profile_manager.get_ytdlp_args(name)
+
+        # передать youtubepot-bgutilhttp в extractor_args чтобы yt-dlp использовал bgutil-ytdlp-pot-provider для получения POT токенов
+        # setdefault используется чтобы не перезаписывать если extractor_args уже есть в ytdlp_args
+        ytdlp_args.setdefault("extractor_args", {})["youtubepot-bgutilhttp"] = {
+            "base_url": ["http://127.0.0.1:4416"]
+        }
+
         # в raw_links хранится список ссылок, но он содержит плейлисты
         raw_links = self._profile_manager.get_links(name)
         if not raw_links:
