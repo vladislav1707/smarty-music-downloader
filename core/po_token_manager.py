@@ -7,7 +7,8 @@ import stat
 import subprocess
 
 import requests
-from path_utils import get_root_dir
+
+from .path_utils import get_root_dir
 
 # create a logger with the same name as the file (proxy_rotator)
 logger = logging.getLogger(__name__)
